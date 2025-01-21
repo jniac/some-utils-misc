@@ -1,19 +1,20 @@
 'use client'
 
-import { createContext, CSSProperties, HTMLAttributes, useContext, useMemo } from 'react'
-import * as THREE from 'three/webgpu'
+import { createContext, CSSProperties, useContext, useMemo, useRef } from 'react'
 import { Group, Object3D } from 'three/webgpu'
 
 import { useEffects, UseEffectsCallback, UseEffectsDeps, UseEffectsEffect, UseEffectsReturnable, useLayoutEffects } from 'some-utils-react/hooks/effects'
 import { useIsClient } from 'some-utils-react/hooks/is-client'
-import { VertigoProps } from 'some-utils-three/webgpu/camera/vertigo'
-import { VertigoControlInputString, VertigoControls } from 'some-utils-three/webgpu/camera/vertigo/controls'
-import { TransformDeclaration } from 'some-utils-three/webgpu/declaration'
-import { ThreeWebGPUContext } from 'some-utils-three/webgpu/experimental/context'
-import { allDescendantsOf, setup } from 'some-utils-three/webgpu/utils/tree'
+import { VertigoProps } from 'some-utils-three/camera/vertigo'
+import { VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
+import { TransformDeclaration } from 'some-utils-three/declaration'
+import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
+import { ThreeWebglContext } from 'some-utils-three/experimental/contexts/webgl'
+import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
+import { allDescendantsOf, setup } from 'some-utils-three/utils/tree'
 import { Message } from 'some-utils-ts/message'
 
-const reactThreeContext = createContext<ThreeWebGPUContext>(null!)
+const reactThreeContext = createContext<ThreeBaseContext>(null!)
 
 export function useThree(
   effects?: UseEffectsCallback<ThreeWebGPUContext>,
@@ -86,7 +87,7 @@ export function ThreeInstance(incomingProps: ThreeInstanceProps) {
     if (!value)
       return
 
-    const instance = typeof value === 'function' ? new value() : value
+    const instance: any = typeof value === 'function' ? new value() : value
     setup(instance, {
       parent: three.scene,
       ...props.transform,
@@ -130,26 +131,38 @@ type ExtendedVertigoProps = VertigoProps & Partial<{
 }>
 
 const defaultProps = {
+  type: undefined as undefined | 'webgpu' | 'webgl',
+  webgl: undefined as undefined | boolean,
+  webgpu: undefined as undefined | boolean,
   className: '',
   assetsPath: '/',
   vertigoControls: false as boolean | ExtendedVertigoProps,
   minActiveDuration: 30,
 }
 
-type Props = HTMLAttributes<HTMLDivElement> & Partial<typeof defaultProps>
+type Props = Partial<typeof defaultProps> & { children?: React.ReactNode }
 
 function ServerProofThreeProvider(incomingProps: Props) {
   const props = { ...defaultProps, ...incomingProps }
   const { children, className, vertigoControls: vertigo } = props
 
-  const three = useMemo(() => new ThreeWebGPUContext(), [])
+  const type = props.type ?? (props.webgpu ? 'webgpu' : 'webgl')
+  const typeRef = useRef(undefined as undefined | 'webgl' | 'webgpu')
+  if (typeRef.current && typeRef.current !== type) {
+    console.warn('ThreeProvider: the prop "type" is not intended to change after the component is mounted.')
+  }
+  typeRef.current = type
+  const three: ThreeBaseContext = useMemo(() => type === 'webgl'
+    ? new ThreeWebglContext()
+    : new ThreeWebGPUContext(), [type])
+
   three.ticker.set({ minActiveDuration: props.minActiveDuration })
   // three.loader.setPath(assetsPath)
 
   const { ref } = useLayoutEffects<HTMLDivElement>({ debounce: true }, function* (div, effect) {
     yield three.initialize(div.firstElementChild as HTMLDivElement, document.body)
     effect.triggerRender()
-    Object.assign(window, { three }, THREE)
+    Object.assign(window, { three })
   }, [])
 
   useEffects(function* () {
@@ -160,7 +173,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
     if (vertigo) {
       const controlsProps = typeof vertigo === 'object' ? vertigo : {}
       const controls = new VertigoControls(controlsProps)
-        .initialize(three.renderer.domElement)
+        .initialize(ref.current!)
 
       Object.assign(controls.inputConfig, controlsProps.inputConfig)
       controls.parsePanInputs(controlsProps.panInput ?? '')
