@@ -1,0 +1,39 @@
+{
+  "name": "some-utils-misc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "jniac",
+  "license": "ISC",
+  "peerDependencies": {
+    "react": ">=19",
+    "some-utils-react": "workspace:*",
+    "some-utils-three": "workspace:*",
+    "some-utils-ts": "workspace:*",
+    "some-utils-dom": "workspace:*",
+    "three": ">=0.172.0"
+  },
+  "devDependencies": {
+    "react": ">=19",
+    "some-utils-react": "workspace:*",
+    "some-utils-three": "workspace:*",
+    "some-utils-ts": "workspace:*",
+    "some-utils-dom": "workspace:*",
+    "three": ">=0.172.0"
+  },
+  "exports": {
+    "./*": {
+      "default": [
+        "./src/*/index.ts",
+        "./src/*.ts"
+      ]
+    }
+  },
+  "files": [
+    "src"
+  ]
+}
