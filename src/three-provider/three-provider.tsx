@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, CSSProperties, useContext, useMemo, useRef } from 'react'
-import { Group, Object3D } from 'three/webgpu'
+import { Group, Object3D } from 'three'
 
 import { useEffects, UseEffectsCallback, UseEffectsDeps, UseEffectsEffect, UseEffectsReturnable, useLayoutEffects } from 'some-utils-react/hooks/effects'
 import { useIsClient } from 'some-utils-react/hooks/is-client'
@@ -17,9 +17,9 @@ import { Message } from 'some-utils-ts/message'
 const reactThreeContext = createContext<ThreeBaseContext>(null!)
 
 export function useThree(
-  effects?: UseEffectsCallback<ThreeWebGPUContext>,
+  effects?: UseEffectsCallback<ThreeBaseContext>,
   deps?: UseEffectsDeps,
-): ThreeWebGPUContext {
+): ThreeBaseContext {
   const three = useContext(reactThreeContext)
 
   useEffects(async function* (_, state) {
@@ -40,7 +40,7 @@ export function useThree(
 
 export function useGroup(
   name: string,
-  effects?: (group: Group, three: ThreeWebGPUContext, state: UseEffectsEffect) => UseEffectsReturnable,
+  effects?: (group: Group, three: ThreeBaseContext, state: UseEffectsEffect) => UseEffectsReturnable,
   deps?: UseEffectsDeps,
 ): Group {
   const group = useMemo(() => new Group(), [])
