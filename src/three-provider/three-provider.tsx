@@ -9,7 +9,7 @@ import { VertigoProps } from 'some-utils-three/camera/vertigo'
 import { VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
 import { TransformDeclaration } from 'some-utils-three/declaration'
 import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
-import { ThreeWebglContext } from 'some-utils-three/experimental/contexts/webgl'
+import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
 import { allDescendantsOf, setup } from 'some-utils-three/utils/tree'
 import { Message } from 'some-utils-ts/message'
@@ -36,6 +36,20 @@ export function useThree(
   }, deps ?? 'always')
 
   return three
+}
+
+export function useThreeWebGL(
+  effects?: UseEffectsCallback<ThreeWebGLContext>,
+  deps?: UseEffectsDeps,
+): ThreeWebGLContext {
+  return useThree(effects as UseEffectsCallback<ThreeBaseContext>, deps) as ThreeWebGLContext
+}
+
+export function useThreeWebGPU(
+  effects?: UseEffectsCallback<ThreeWebGPUContext>,
+  deps?: UseEffectsDeps,
+): ThreeWebGPUContext {
+  return useThree(effects as UseEffectsCallback<ThreeBaseContext>, deps) as ThreeWebGPUContext
 }
 
 export function useGroup(
@@ -153,7 +167,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
   }
   typeRef.current = type
   const three: ThreeBaseContext = useMemo(() => type === 'webgl'
-    ? new ThreeWebglContext()
+    ? new ThreeWebGLContext()
     : new ThreeWebGPUContext(), [type])
 
   three.ticker.set({ minActiveDuration: props.minActiveDuration })
