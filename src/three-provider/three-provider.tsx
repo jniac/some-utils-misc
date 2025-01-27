@@ -8,7 +8,7 @@ import { useIsClient } from 'some-utils-react/hooks/is-client'
 import { VertigoProps } from 'some-utils-three/camera/vertigo'
 import { VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
 import { TransformDeclaration } from 'some-utils-three/declaration'
-import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
+import { ThreeBaseContext, ThreeContextType } from 'some-utils-three/experimental/contexts/types'
 import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
 import { allDescendantsOf, setup } from 'some-utils-three/utils/tree'
@@ -38,18 +38,58 @@ export function useThree(
   return three
 }
 
+/**
+ * If a ThreeWebGLContext is available, use it, otherwise return null and ignore 
+ * the effects.
+ */
 export function useThreeWebGL(
   effects?: UseEffectsCallback<ThreeWebGLContext>,
   deps?: UseEffectsDeps,
-): ThreeWebGLContext {
-  return useThree(effects as UseEffectsCallback<ThreeBaseContext>, deps) as ThreeWebGLContext
+): ThreeWebGLContext | null {
+  const three = useThree(async function* (three, effect) {
+    if (three.type === ThreeContextType.WebGL && effects) {
+      const fx = effects as UseEffectsCallback<ThreeBaseContext>
+      const it = fx(three, effect)
+      if (it && typeof it.next === 'function') {
+        do {
+          const { value, done } = await it.next()
+          if (done) break
+          yield value
+        } while (true)
+      }
+    }
+  }, deps) as ThreeWebGLContext
+  if (three.type === ThreeContextType.WebGL) {
+    return three
+  }
+  return null
 }
 
+/**
+ * If a "webgpu" context is available, use it, otherwise return null and ignore 
+ * the effects.
+ */
 export function useThreeWebGPU(
   effects?: UseEffectsCallback<ThreeWebGPUContext>,
   deps?: UseEffectsDeps,
-): ThreeWebGPUContext {
-  return useThree(effects as UseEffectsCallback<ThreeBaseContext>, deps) as ThreeWebGPUContext
+): ThreeWebGPUContext | null {
+  const three = useThree(async function* (three, effect) {
+    if (three.type === ThreeContextType.WebGPU && effects) {
+      const fx = effects as UseEffectsCallback<ThreeBaseContext>
+      const it = fx(three, effect)
+      if (it && typeof it.next === 'function') {
+        do {
+          const { value, done } = await it.next()
+          if (done) break
+          yield value
+        } while (true)
+      }
+    }
+  }, deps) as ThreeWebGPUContext
+  if (three.type === ThreeContextType.WebGPU) {
+    return three
+  }
+  return null
 }
 
 export function useGroup(
@@ -86,7 +126,7 @@ const defaultThreeInstanceProps = {
   hidden: false,
 }
 type ThreeInstanceProps = Partial<typeof defaultThreeInstanceProps> & {
-  value: null | Object3D | (new (...args: any[]) => Object3D),
+  value: null | Object3D | (new () => Object3D) | (new (...args: any[]) => Object3D),
   transform?: TransformDeclaration
 }
 export function ThreeInstance(incomingProps: ThreeInstanceProps) {
