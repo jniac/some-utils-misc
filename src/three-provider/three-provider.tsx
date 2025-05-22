@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, CSSProperties, useContext, useMemo, useRef } from 'react'
+import * as THREE from 'three'
 import { Group, Object3D } from 'three'
 
 import { useEffects, UseEffectsCallback, UseEffectsDeps, UseEffectsEffect, UseEffectsReturnable, useLayoutEffects } from 'some-utils-react/hooks/effects'
@@ -216,7 +217,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
   const { ref } = useLayoutEffects<HTMLDivElement>({ debounce: true }, function* (div, effect) {
     yield three.initialize(div.firstElementChild as HTMLDivElement, document.body)
     effect.triggerRender()
-    Object.assign(window, { three })
+    Object.assign(window, { three, THREE })
   }, [])
 
   useEffects(function* () {
