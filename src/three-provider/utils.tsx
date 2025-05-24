@@ -74,21 +74,23 @@ class ToggleHelperHandler {
     }
   }
 
-  set showHelpers(show: boolean) {
-    this.currentShowHelpers = show
+  set showHelpers(show: boolean | undefined) {
+    this.currentShowHelpers = show ?? this.currentShowHelpers
     this.updateHelpers()
   }
 }
 
 export function ToggleHelpers(incomingParams?: ToggleHelpersParams) {
-  const show = incomingParams?.showHelpers ?? incomingParams?.hideHelpers === false
-  useThree(function* (three) {
+  const show = incomingParams?.showHelpers ?? incomingParams?.hideHelpers === false ? false : undefined
+  useThree(async function* (three) {
     let instance = ToggleHelperHandler.instances.get(three)
     if (!instance) {
       instance = new ToggleHelperHandler(three, incomingParams)
       yield* instance.initialize()
       ToggleHelperHandler.instances.set(three, instance)
     }
+    instance.showHelpers = show
+    await three.ticker.waitForSeconds(.2)
     instance.showHelpers = show
   }, [show])
   return null
