@@ -28,7 +28,6 @@ export function ToggleFullscreen() {
   return null
 }
 
-
 const defaultToggleHelpersParams = {
   hotkey: 'g',
   showHelpers: undefined as boolean | undefined,
@@ -38,7 +37,7 @@ const defaultToggleHelpersParams = {
 type ToggleHelpersParams = Partial<typeof defaultToggleHelpersParams>
 
 class ToggleHelperHandler {
-  static instances = new WeakMap<ThreeBaseContext, ToggleHelperHandler>
+  static instances = new Map<ThreeBaseContext, ToggleHelperHandler>
 
   root: Object3D
   currentShowHelpers: boolean
@@ -46,6 +45,7 @@ class ToggleHelperHandler {
   safeParams: typeof defaultToggleHelpersParams
 
   constructor(three: ThreeBaseContext, incomingParams?: ToggleHelpersParams) {
+    ToggleHelperHandler.instances.set(three, this)
     this.safeParams = { ...defaultToggleHelpersParams, ...incomingParams }
     this.root = three.scene
     this.currentShowHelpers = incomingParams?.showHelpers ?? incomingParams?.hideHelpers === false
@@ -87,7 +87,6 @@ export function ToggleHelpers(incomingParams?: ToggleHelpersParams) {
     if (!instance) {
       instance = new ToggleHelperHandler(three, incomingParams)
       yield* instance.initialize()
-      ToggleHelperHandler.instances.set(three, instance)
     }
     instance.showHelpers = show
     await three.ticker.waitForSeconds(.2)
