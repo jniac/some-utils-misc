@@ -30,8 +30,8 @@ export function ToggleFullscreen() {
 
 const defaultToggleHelpersParams = {
   hotkey: 'g',
-  showHelpers: undefined as boolean | undefined,
-  hideHelpers: undefined as boolean | undefined,
+  show: undefined as boolean | undefined,
+  hide: undefined as boolean | undefined,
   isHelper: (object: Object3D) => object.userData.helper === true,
 }
 type ToggleHelpersParams = Partial<typeof defaultToggleHelpersParams>
@@ -48,7 +48,7 @@ class ToggleHelperHandler {
     ToggleHelperHandler.instances.set(three, this)
     this.safeParams = { ...defaultToggleHelpersParams, ...incomingParams }
     this.root = three.scene
-    this.currentShowHelpers = incomingParams?.showHelpers ?? incomingParams?.hideHelpers === false
+    this.currentShowHelpers = incomingParams?.show ?? incomingParams?.hide !== false
     this.updateHelpers()
   }
 
@@ -81,7 +81,10 @@ class ToggleHelperHandler {
 }
 
 export function ToggleHelpers(incomingParams?: ToggleHelpersParams) {
-  const show = incomingParams?.showHelpers ?? incomingParams?.hideHelpers === false ? false : undefined
+  const show =
+    incomingParams?.show !== undefined ? incomingParams?.show
+      : incomingParams?.hide !== undefined ? !incomingParams?.hide
+        : undefined
   useThree(async function* (three) {
     let instance = ToggleHelperHandler.instances.get(three)
     if (!instance) {
