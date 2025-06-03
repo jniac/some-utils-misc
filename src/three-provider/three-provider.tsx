@@ -15,6 +15,7 @@ import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
 import { allDescendantsOf, setup } from 'some-utils-three/utils/tree'
 import { Message } from 'some-utils-ts/message'
+import { OneOrMany } from 'some-utils-ts/types'
 
 import { reactThreeContext } from './context'
 import { useThree } from './hooks'
@@ -23,11 +24,26 @@ const defaultThreeInstanceProps = {
   hidden: false,
 }
 type ThreeInstanceProps = Partial<typeof defaultThreeInstanceProps> & {
-  value: null | Object3D | (new () => Object3D) | (new (...args: any[]) => Object3D),
+  value: OneOrMany<null | Object3D | (new () => Object3D) | (new (...args: any[]) => Object3D)>,
   transform?: TransformDeclaration
 }
 export function ThreeInstance(incomingProps: ThreeInstanceProps) {
   const props = { ...defaultThreeInstanceProps, ...incomingProps }
+
+  if (Array.isArray(props.value)) {
+    return (
+      <>
+        {props.value.map((value, i) => (
+          <ThreeInstance
+            key={i}
+            value={value}
+            hidden={props.hidden}
+            transform={props.transform}
+          />
+        ))}
+      </>
+    )
+  }
 
   useThree(async function* (three) {
     const {
