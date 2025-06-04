@@ -1,10 +1,11 @@
+import { Object3D } from 'three'
+
 import { handleKeyboard } from 'some-utils-dom/handle/keyboard'
 import { useEffects } from 'some-utils-react/hooks/effects'
+import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
 import { allDescendantsOf } from 'some-utils-three/utils/tree'
+import { Destroyable } from 'some-utils-ts/types'
 
-import { ThreeBaseContext } from 'packages/some-utils-three/dist/experimental/contexts/types'
-import { Destroyable } from 'packages/some-utils-ts/dist/types'
-import { Object3D } from 'three'
 import { useThree } from './hooks'
 
 export function ToggleFullscreen() {
