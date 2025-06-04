@@ -2,90 +2,36 @@
 
 import { CSSProperties, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { Object3D } from 'three'
 
 import { handleAnyUserInteraction } from 'some-utils-dom/handle/any-user-interaction'
 import { useEffects, useLayoutEffects } from 'some-utils-react/hooks/effects'
 import { useIsClient } from 'some-utils-react/hooks/is-client'
 import { VertigoProps } from 'some-utils-three/camera/vertigo'
 import { VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
-import { TransformDeclaration } from 'some-utils-three/declaration'
 import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
 import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
-import { allDescendantsOf, setup } from 'some-utils-three/utils/tree'
 import { Message } from 'some-utils-ts/message'
-import { OneOrMany } from 'some-utils-ts/types'
 
 import { reactThreeContext } from './context'
-import { useThree } from './hooks'
+import { useInstance } from './hooks'
 
-const defaultThreeInstanceProps = {
-  hidden: false,
-}
-type ThreeInstanceProps = Partial<typeof defaultThreeInstanceProps> & {
-  value: OneOrMany<null | Object3D | (new () => Object3D) | (new (...args: any[]) => Object3D)>,
-  transform?: TransformDeclaration
-}
-export function ThreeInstance(incomingProps: ThreeInstanceProps) {
-  const props = { ...defaultThreeInstanceProps, ...incomingProps }
-
-  if (Array.isArray(props.value)) {
+export function ThreeInstance(incomingProps: Parameters<typeof useInstance>[0]) {
+  if (Array.isArray(incomingProps?.value)) {
     return (
       <>
-        {props.value.map((value, i) => (
+        {incomingProps.value.map((value, i) => (
           <ThreeInstance
             key={i}
+            {...incomingProps}
             value={value}
-            hidden={props.hidden}
-            transform={props.transform}
           />
         ))}
       </>
     )
   }
 
-  useThree(async function* (three) {
-    const {
-      value,
-      hidden,
-    } = props
-
-    if (!value)
-      return
-
-    const instance: any = typeof value === 'function' ? new value() : value
-    setup(instance, {
-      parent: three.scene,
-      ...props.transform,
-    })
-
-    if (hidden) {
-      instance.visible = false
-    }
-
-    for (const object of allDescendantsOf(instance, { includeSelf: true })) {
-      if ('onInitialize' in object) {
-        const result = (object as any).onInitialize(three)
-        if (result && typeof result.next === 'function') {
-          do {
-            const { value, done } = await result.next()
-            if (done) break
-            yield value
-          } while (true)
-        }
-      }
-    }
-
-    yield () => {
-      instance.removeFromParent()
-      for (const object of allDescendantsOf(instance, { includeSelf: true })) {
-        if ('onDestroy' in object) {
-          (object as any).onDestroy?.()
-        }
-      }
-    }
-  }, 'always')
+  useInstance(incomingProps)
 
   return null
 }

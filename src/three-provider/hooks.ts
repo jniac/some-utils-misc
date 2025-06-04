@@ -1,10 +1,13 @@
 import { useContext, useMemo } from 'react'
-import { Group } from 'three'
+import { Group, Object3D } from 'three'
 
 import { useEffects, UseEffectsCallback, UseEffectsDeps, UseEffectsEffect, UseEffectsReturnable } from 'some-utils-react/hooks/effects'
+import { TransformDeclaration } from 'some-utils-three/declaration'
 import { ThreeBaseContext, ThreeContextType } from 'some-utils-three/experimental/contexts/types'
 import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
+import { allDescendantsOf, setup } from 'some-utils-three/utils/tree'
+import { OneOrMany } from 'some-utils-ts/types'
 
 import { reactThreeContext } from './context'
 
@@ -112,4 +115,57 @@ export function useGroup(
   }, deps)
 
   return group
+}
+
+const defaultInstanceProps = {
+  hidden: false,
+}
+
+type InstanceProps = Partial<typeof defaultInstanceProps> & {
+  value: OneOrMany<null | Object3D | (new () => Object3D) | (new (...args: any[]) => Object3D)>,
+  transform?: TransformDeclaration
+}
+
+export function useInstance(props: InstanceProps) {
+  useThree(async function* (three) {
+    const {
+      value,
+      hidden,
+    } = props
+
+    if (!value)
+      return
+
+    const instance: any = typeof value === 'function' ? new value() : value
+    setup(instance, {
+      parent: three.scene,
+      ...props.transform,
+    })
+
+    if (hidden) {
+      instance.visible = false
+    }
+
+    for (const object of allDescendantsOf(instance, { includeSelf: true })) {
+      if ('onInitialize' in object) {
+        const result = (object as any).onInitialize(three)
+        if (result && typeof result.next === 'function') {
+          do {
+            const { value, done } = await result.next()
+            if (done) break
+            yield value
+          } while (true)
+        }
+      }
+    }
+
+    yield () => {
+      instance.removeFromParent()
+      for (const object of allDescendantsOf(instance, { includeSelf: true })) {
+        if ('onDestroy' in object) {
+          (object as any).onDestroy?.()
+        }
+      }
+    }
+  }, 'always')
 }
