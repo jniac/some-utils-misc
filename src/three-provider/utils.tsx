@@ -4,6 +4,7 @@ import { handleKeyboard } from 'some-utils-dom/handle/keyboard'
 import { useEffects } from 'some-utils-react/hooks/effects'
 import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
 import { allDescendantsOf } from 'some-utils-three/utils/tree'
+import { Message } from 'some-utils-ts/message'
 import { Destroyable } from 'some-utils-ts/types'
 
 import { useThree } from './hooks'
@@ -73,6 +74,7 @@ class ToggleHelperHandler {
         descendant.visible = this.currentShowHelpers
       }
     }
+    Message.send('TOGGLE_HELPERS', this.currentShowHelpers ? 'SHOW' : 'HIDE')
   }
 
   set showHelpers(show: boolean | undefined) {
