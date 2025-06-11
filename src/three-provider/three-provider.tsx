@@ -13,6 +13,7 @@ import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
 import { Message } from 'some-utils-ts/message'
 
+import { ThreePointerEvent } from 'some-utils-three/experimental/contexts/pointer'
 import { reactThreeContext } from './context'
 import { useInstance } from './hooks'
 
@@ -73,7 +74,12 @@ function ServerProofThreeProvider(incomingProps: Props) {
   // three.loader.setPath(assetsPath)
 
   const { ref } = useLayoutEffects<HTMLDivElement>({ debounce: true }, function* (div, effect) {
-    yield three.initialize(div.firstElementChild as HTMLDivElement, document.body)
+    const canvasWrapper = div.querySelector('#three-wrapper-canvas') as HTMLDivElement
+    yield three.initialize(canvasWrapper, document.body)
+    three.pointer.setEventIgnore(ThreePointerEvent.Type.Tap, event => {
+      const { downTarget } = event
+      return canvasWrapper === downTarget || canvasWrapper.contains(downTarget)
+    })
     effect.triggerRender()
     Object.assign(window, { three, THREE })
   }, [])
@@ -115,8 +121,8 @@ function ServerProofThreeProvider(incomingProps: Props) {
   return (
     <div ref={ref} className={className} style={layer}>
       <reactThreeContext.Provider value={three}>
-        <div style={layer} />
-        <div style={layer} className='thru'>
+        <div id='three-wrapper-canvas' style={layer} />
+        <div id='three-wrapper-hud' style={layer} className='thru'>
           {three.initialized && children}
         </div>
       </reactThreeContext.Provider>
