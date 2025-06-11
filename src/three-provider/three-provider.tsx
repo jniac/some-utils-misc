@@ -78,7 +78,8 @@ function ServerProofThreeProvider(incomingProps: Props) {
     yield three.initialize(canvasWrapper, document.body)
     three.pointer.setEventIgnore(ThreePointerEvent.Type.Tap, event => {
       const { downTarget } = event
-      return canvasWrapper === downTarget || canvasWrapper.contains(downTarget)
+      const isCanvas = canvasWrapper === downTarget || canvasWrapper.contains(downTarget)
+      return isCanvas === false
     })
     effect.triggerRender()
     Object.assign(window, { three, THREE })
