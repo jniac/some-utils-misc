@@ -10,7 +10,7 @@
   "author": "jniac",
   "license": "ISC",
   "peerDependencies": {
-    "@types/three": "^0.176.0",
+    "@types/three": ">=0.176.0",
     "@types/react": "^19",
     "react": ">=19",
     "some-utils-dom": "workspace:*",
