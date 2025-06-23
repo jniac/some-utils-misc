@@ -108,7 +108,16 @@ function ServerProofThreeProvider(incomingProps: Props) {
       yield controls.destroy
 
       yield Message.on('VERTIGO_CONTROLS', m => {
-        m.setPayload(controls)
+        switch (m.type) {
+          case 'SET': {
+            controls.vertigo.set(m.payload)
+            break
+          }
+          default: {
+            m.setPayload(controls)
+            break
+          }
+        }
       })
 
       // order: -1 to run before the default "render" tick
