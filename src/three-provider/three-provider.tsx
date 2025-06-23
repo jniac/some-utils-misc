@@ -8,32 +8,18 @@ import { useEffects, useLayoutEffects } from 'some-utils-react/hooks/effects'
 import { useIsClient } from 'some-utils-react/hooks/is-client'
 import { VertigoProps } from 'some-utils-three/camera/vertigo'
 import { VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
+import { PlaneDeclaration } from 'some-utils-three/declaration'
+import { ThreePointerEvent } from 'some-utils-three/experimental/contexts/pointer'
 import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
 import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
 import { Message } from 'some-utils-ts/message'
 
-import { ThreePointerEvent } from 'some-utils-three/experimental/contexts/pointer'
 import { reactThreeContext } from './context'
 import { useInstance } from './hooks'
 
 export function ThreeInstance(incomingProps: Parameters<typeof useInstance>[0]) {
-  if (Array.isArray(incomingProps?.value)) {
-    return (
-      <>
-        {incomingProps.value.map((value, i) => (
-          <ThreeInstance
-            key={i}
-            {...incomingProps}
-            value={value}
-          />
-        ))}
-      </>
-    )
-  }
-
   useInstance(incomingProps)
-
   return null
 }
 
@@ -42,6 +28,7 @@ type ExtendedVertigoProps = VertigoProps & Partial<{
   panInput: VertigoControlInputString
   orbitInput: VertigoControlInputString
   inputConfig: Partial<VertigoControls['inputConfig']>
+  focusPlane: PlaneDeclaration
 }>
 
 const defaultProps = {
@@ -100,6 +87,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
       Object.assign(controls.inputConfig, controlsProps.inputConfig)
       controls.parsePanInputs(controlsProps.panInput ?? '')
       controls.parseOrbitInputs(controlsProps.orbitInput ?? '')
+      controls.focusPlane = controlsProps.focusPlane ?? null
 
       if (!controlsProps.fixed) {
         controls.start()
