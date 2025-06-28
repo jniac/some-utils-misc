@@ -18,7 +18,7 @@ import { Message } from 'some-utils-ts/message'
 import { reactThreeContext } from './context'
 import { useInstance } from './hooks'
 
-export function ThreeInstance(incomingProps: Parameters<typeof useInstance>[0]) {
+export function ThreeInstance<T extends THREE.Object3D>(incomingProps: Parameters<typeof useInstance<T>>[0]) {
   useInstance(incomingProps)
   return null
 }

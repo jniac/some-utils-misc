@@ -121,22 +121,45 @@ const defaultInstanceProps = {
   hidden: false,
 }
 
-type InstanceProps = Partial<typeof defaultInstanceProps> & {
-  value: OneOrMany<null | Object3D | (new () => Object3D) | (new (...args: any[]) => Object3D)>,
+type InstanceProps<T extends Object3D> = Partial<typeof defaultInstanceProps> & {
+  /**
+   * The value of the instance to create. It can be:
+   * - An instance of `T`
+   * - A constructor of `T` (e.g. `new () => T`)
+   * - A function that returns an instance of `T` (e.g. `() => T`)
+   * - `null` to skip the instance creation
+   * - An array of the above types to create multiple instances
+   */
+  value: OneOrMany<null | T | (() => T) | (new (...args: any[]) => T)>,
+
+  /**
+   * The arguments to pass to the constructor of `T` if `value` is a constructor.
+   * If `value` is a function, these arguments will be passed to the function.
+   */
+  args?: any[],
+  // args?: T extends (new (...args: any) => any) ? ConstructorParameters<T> : never,
+
+  /**
+   * The transform to apply to the instance.
+   */
   transform?: TransformDeclaration
 }
 
-export function useInstance(props: InstanceProps) {
+export function useInstance<T extends Object3D>(props: InstanceProps<T>) {
   useThree(async function* (three) {
     const {
       value,
+      args = [],
       hidden,
     } = props
 
     if (!value)
       return
 
-    const instance: any = typeof value === 'function' ? new value() : value
+    const isConstructor = (v: any): v is (new (...args: any[]) => T) =>
+      typeof v === 'function' && v.prototype && Object3D.prototype.isPrototypeOf(v.prototype)
+
+    const instance: any = isConstructor(value) ? new value(...args) : value
     setup(instance, {
       parent: three.scene,
       ...props.transform,
