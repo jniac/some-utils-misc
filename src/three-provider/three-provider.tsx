@@ -95,7 +95,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
 
       yield controls.destroy
 
-      yield Message.on('VERTIGO_CONTROLS', m => {
+      const onVertigoControlsMessage = (m: Message<any>): void => {
         switch (m.type) {
           case 'SET': {
             controls.vertigo.set(m.payload)
@@ -106,7 +106,9 @@ function ServerProofThreeProvider(incomingProps: Props) {
             break
           }
         }
-      })
+      }
+      yield Message.on('VERTIGO_CONTROLS', onVertigoControlsMessage) // for backwards compatibility
+      yield Message.on(VertigoControls, onVertigoControlsMessage)
 
       // order: -1 to run before the default "render" tick
       yield three.ticker.onTick({ order: -1 }, tick => {
