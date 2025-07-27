@@ -88,6 +88,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
       controls.parsePanInputs(controlsProps.panInput ?? '')
       controls.parseOrbitInputs(controlsProps.orbitInput ?? '')
       controls.focusPlane = controlsProps.focusPlane ?? null
+      three.scene.add(controls.group)
 
       if (!controlsProps.fixed) {
         controls.start()
