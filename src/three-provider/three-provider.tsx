@@ -10,7 +10,7 @@ import { VertigoProps } from 'some-utils-three/camera/vertigo'
 import { VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
 import { PlaneDeclaration } from 'some-utils-three/declaration'
 import { ThreePointerEvent } from 'some-utils-three/experimental/contexts/pointer'
-import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
+import { ThreeBaseContext, TickPhase } from 'some-utils-three/experimental/contexts/types'
 import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
 import { Message } from 'some-utils-ts/message'
@@ -47,11 +47,11 @@ function ServerProofThreeProvider(incomingProps: Props) {
   const props = { ...defaultProps, ...incomingProps }
   const { children, className, vertigoControls: vertigo } = props
 
+  // Type handling for webgl and webgpu
   const type = props.type ?? (props.webgpu ? 'webgpu' : 'webgl')
   const typeRef = useRef(undefined as undefined | 'webgl' | 'webgpu')
-  if (typeRef.current && typeRef.current !== type) {
+  if (typeRef.current && typeRef.current !== type)
     console.warn('ThreeProvider: the prop "type" is not intended to change after the component is mounted.')
-  }
   typeRef.current = type
   const three: ThreeBaseContext = useMemo(() => type === 'webgl'
     ? new ThreeWebGLContext()
@@ -112,7 +112,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
       yield Message.on(VertigoControls, onVertigoControlsMessage)
 
       // order: -1 to run before the default "render" tick
-      yield three.ticker.onTick({ order: -1 }, tick => {
+      yield three.ticker.onTick({ phase: TickPhase.Render, order: -1 }, tick => {
         controls.update(three.camera, three.aspect, tick.deltaTime)
       })
     }
