@@ -31,6 +31,8 @@ export class ThreeWebGlForeground {
     three2.camera.matrixAutoUpdate = false // The camera matrices will be a strict copy of three.camera
     three2.setScene(three.scene)
     three2.renderer.clippingPlanes = [clipPlane]
+    three2.skipTickUpdate = true
+    three2.pointer.enabled = false
 
     yield three.ticker.onTick({ phase: TickPhase.AfterRender }, tick => {
       three2.renderer.domElement.style.setProperty('display', this.enabled ? 'block' : 'none')
