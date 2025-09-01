@@ -45,7 +45,7 @@ type Props = Partial<typeof defaultProps> & { children?: React.ReactNode }
 
 function ServerProofThreeProvider(incomingProps: Props) {
   const props = { ...defaultProps, ...incomingProps }
-  const { children, className, vertigoControls: vertigo } = props
+  const { children, className, vertigoControls: vertigoControlsProps } = props
 
   // Type handling for webgl and webgpu
   const type = props.type ?? (props.webgpu ? 'webgpu' : 'webgl')
@@ -79,8 +79,8 @@ function ServerProofThreeProvider(incomingProps: Props) {
 
     yield handleAnyUserInteraction(three.ticker.requestActivation)
 
-    if (vertigo) {
-      const controlsProps = typeof vertigo === 'object' ? vertigo : {}
+    if (vertigoControlsProps) {
+      const controlsProps = typeof vertigoControlsProps === 'object' ? vertigoControlsProps : {}
       const controls = new VertigoControls(controlsProps)
         .initialize(ref.current!)
 
@@ -116,7 +116,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
         controls.update(three.camera, three.aspect, tick.deltaTime)
       })
     }
-  }, [vertigo])
+  }, [vertigoControlsProps])
 
   const layer = { position: 'absolute', inset: 0 } as CSSProperties
   return (
