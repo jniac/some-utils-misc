@@ -13,6 +13,9 @@ export function ThreeWebGlForegroundProvider({ children }: { children?: React.Re
   const [ready, setReady] = useState(false)
   const foreground = useMemo(() => new ThreeWebGlForeground(), [three])
 
+  // @ts-ignore (cheat for debug purpose)
+  three.foreground = foreground
+
   useEffects(function* () {
     yield* foreground.initialize(three)
     yield Message.on(ThreeWebGlForeground, message =>
