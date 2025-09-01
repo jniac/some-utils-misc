@@ -18,6 +18,8 @@ export class ThreeWebGlForeground {
   div = document.createElement('div');
   clipPlane = new Plane();
 
+  onBeforeRender = () => { };
+
   *initialize(three: ThreeWebGLContext) {
     const { three2, clipPlane } = this
 
@@ -40,6 +42,8 @@ export class ThreeWebGlForeground {
       three2.renderer.domElement.style.setProperty('pointer-events', isOverForeground ? 'auto' : 'none')
 
       if (this.enabled) {
+        this.onBeforeRender()
+
         // Camera update
         three2.camera.matrix.copy(three.camera.matrix)
         three2.camera.matrixWorld.copy(three.camera.matrixWorld)
