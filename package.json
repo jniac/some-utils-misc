@@ -10,9 +10,11 @@
   "author": "jniac",
   "license": "ISC",
   "peerDependencies": {
-    "@types/three": ">=0.176.0",
     "@types/react": "^19",
+    "@types/react-dom": ">=19",
+    "@types/three": ">=0.176.0",
     "react": ">=19",
+    "react-dom": ">=19",
     "some-utils-dom": "workspace:*",
     "some-utils-react": "workspace:*",
     "some-utils-three": "workspace:*",
