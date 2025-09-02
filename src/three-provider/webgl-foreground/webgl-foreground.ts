@@ -1,5 +1,6 @@
 import { Plane } from 'three'
 
+import { requireStyle } from 'some-utils-dom/style/require'
 import { TickPhase } from 'some-utils-three/experimental/contexts/types'
 import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 
@@ -27,6 +28,15 @@ export class ThreeWebGlForeground {
     layered(this.div)
     three.domContainer.appendChild(this.div)
 
+    yield requireStyle('three-webgl-foreground', /* css */`
+      #three-webgl-foreground {
+        pointer-events: none;
+      }
+      #three-webgl-foreground > * {
+        pointer-events: auto;
+      }
+    `)
+
     yield three2.initialize(three.domContainer)
     layered(three2.domElement)
 
@@ -38,7 +48,7 @@ export class ThreeWebGlForeground {
 
     yield three.ticker.onTick({ phase: TickPhase.AfterRender }, tick => {
       three2.renderer.domElement.style.setProperty('display', this.enabled ? 'block' : 'none')
-      const isOverForeground = this.enabled && three2.pointerPixelColor().a > 0
+      const isOverForeground = this.enabled && three2.pixelColorNdc(three.pointer.screenPosition).a > 0
       three2.renderer.domElement.style.setProperty('pointer-events', isOverForeground ? 'auto' : 'none')
 
       if (this.enabled) {
