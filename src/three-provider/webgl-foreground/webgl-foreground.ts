@@ -45,6 +45,7 @@ export class ThreeWebGlForeground {
     three2.renderer.clippingPlanes = [clipPlane]
     three2.skipTickUpdate = true
     three2.pointer.enabled = false
+    three2.enabled = false
 
     yield three.ticker.onTick({ phase: TickPhase.AfterRender }, tick => {
       three2.renderer.domElement.style.setProperty('display', this.enabled ? 'block' : 'none')
@@ -60,7 +61,7 @@ export class ThreeWebGlForeground {
         three2.camera.matrixWorldInverse.copy(three.camera.matrixWorldInverse)
         three2.camera.projectionMatrix.copy(three.camera.projectionMatrix)
         three2.camera.projectionMatrixInverse.copy(three.camera.projectionMatrixInverse)
-        three2.renderFrame(tick)
+        three2.renderFrame(tick, { force: true })
       }
     })
   }

@@ -62,13 +62,17 @@ function ServerProofThreeProvider(incomingProps: Props) {
 
   const { ref } = useLayoutEffects<HTMLDivElement>({ debounce: true }, function* (div, effect) {
     const canvasWrapper = div.querySelector('#three-wrapper-canvas') as HTMLDivElement
+
     yield three.initialize(canvasWrapper, document.body)
+
     three.pointer.setEventIgnore(ThreePointerEvent.Type.Tap, event => {
       const { downTarget } = event
       const isCanvas = canvasWrapper === downTarget || canvasWrapper.contains(downTarget)
       return isCanvas === false
     })
+
     effect.triggerRender()
+
     Object.assign(window, { three, THREE })
   }, [])
 
@@ -112,7 +116,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
       yield Message.on(VertigoControls, onVertigoControlsMessage)
 
       // order: -1 to run before the default "render" tick
-      yield three.ticker.onTick({ phase: TickPhase.Render, order: -1 }, tick => {
+      yield three.ticker.onTick({ name: 'VertigoControls', phase: TickPhase.BeforeRender, order: -1 }, tick => {
         controls.update(three.camera, three.aspect, tick.deltaTime)
       })
     }

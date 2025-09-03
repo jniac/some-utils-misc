@@ -8,7 +8,7 @@ import { ThreeWebGlForeground } from './webgl-foreground'
 
 const context = createContext<ThreeWebGlForeground>(null!)
 
-export function ThreeWebGlForegroundProvider({ children }: { children?: React.ReactNode }) {
+export function ThreeWebGlForegroundProvider({ enabled, children }: { enabled?: boolean, children?: React.ReactNode }) {
   const three = useThreeWebGL()!
   const [ready, setReady] = useState(false)
   const foreground = useMemo(() => new ThreeWebGlForeground(), [three])
@@ -17,6 +17,7 @@ export function ThreeWebGlForegroundProvider({ children }: { children?: React.Re
   three.foreground = foreground
 
   useEffects(function* () {
+    foreground.enabled = enabled ?? true
     yield* foreground.initialize(three)
     yield Message.on(ThreeWebGlForeground, message =>
       message.setPayload(foreground))
