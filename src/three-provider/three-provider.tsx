@@ -29,6 +29,10 @@ type ExtendedVertigoProps = VertigoProps & Partial<{
   orbitInput: VertigoControlInputString
   inputConfig: Partial<VertigoControls['inputConfig']>
   focusPlane: PlaneDeclaration
+  /**
+   * If true, the controls will be attached to the canvas element instead of the wrapper div.
+   */
+  eventTarget: 'canvas' | 'wrapper'
 }>
 
 const defaultProps = {
@@ -86,7 +90,10 @@ function ServerProofThreeProvider(incomingProps: Props) {
     if (vertigoControlsProps) {
       const controlsProps = typeof vertigoControlsProps === 'object' ? vertigoControlsProps : {}
       const controls = new VertigoControls(controlsProps)
-        .initialize(ref.current!)
+        .initialize(
+          controlsProps.eventTarget === 'canvas'
+            ? three.domElement
+            : ref.current!)
 
       Object.assign(controls.inputConfig, controlsProps.inputConfig)
       controls.parsePanInputs(controlsProps.panInput ?? '')
