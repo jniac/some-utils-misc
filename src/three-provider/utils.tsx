@@ -38,6 +38,18 @@ const defaultToggleHelpersParams = {
 }
 type ToggleHelpersParams = Partial<typeof defaultToggleHelpersParams>
 
+export function toggleHelpers(object: Object3D, options?: { show?: boolean, isHelper?: (object: Object3D) => boolean }) {
+  const {
+    show,
+    isHelper = (object: Object3D) => object.userData.helper === true,
+  } = options ?? {}
+  for (const descendant of allDescendantsOf(object)) {
+    if (isHelper(descendant)) {
+      descendant.visible = show ?? descendant.visible
+    }
+  }
+}
+
 class ToggleHelperHandler {
   static instances = new Map<ThreeBaseContext, ToggleHelperHandler>
 
