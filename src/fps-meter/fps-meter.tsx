@@ -1,18 +1,36 @@
 import { HTMLProps } from 'react'
 
 import { useEffects } from 'some-utils-react/hooks/effects'
+import { Ticker } from 'some-utils-ts/ticker'
 
-import { useThree } from '../three-provider/hooks'
+const defaultProps = {
+  /**
+   * Number of times per second to update the FPS meter.
+   */
+  frequency: 3,
+  /**
+   * Name of the ticker to use for the FPS meter.
+   */
+  tickerName: 'three',
+}
 
-export function FpsMeter(props: HTMLProps<HTMLDivElement>) {
-  const three = useThree()
+type Props = HTMLProps<HTMLDivElement> & Partial<typeof defaultProps>
+
+/**
+ * A simple FPS meter that updates at a specified frequency (3 times per second by default).
+ *
+ * Works with the 'three' ticker by default, but you can specify a different ticker name if needed.
+ */
+export function FpsMeter(props: Props) {
+  const { frequency, tickerName, ...rest } = { ...defaultProps, ...props }
   const { ref } = useEffects<HTMLDivElement>(function* () {
-    yield three.ticker.onTick({ timeInterval: 1 / 3 }, () => {
-      ref.current.innerText = `${three.averageFps.toFixed(1)} fps`
+    const ticker = Ticker.get('three')
+    yield ticker.onTick({ timeInterval: 1 / 3 }, () => {
+      ref.current.innerText = `${ticker.averageFps.toFixed(1)} fps`
     })
-  }, [])
+  }, [frequency, tickerName])
   return (
-    <div ref={ref} {...props}>
+    <div ref={ref} {...rest}>
       -- fps
     </div>
   )
