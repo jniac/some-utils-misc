@@ -4,6 +4,7 @@ import { CSSProperties, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
 import { handleAnyUserInteraction } from 'some-utils-dom/handle/any-user-interaction'
+import { handleKeyboard, KeyboardFilterDeclaration } from 'some-utils-dom/handle/keyboard'
 import { useEffects, useLayoutEffects } from 'some-utils-react/hooks/effects'
 import { useIsClient } from 'some-utils-react/hooks/is-client'
 import { VertigoProps } from 'some-utils-three/camera/vertigo'
@@ -43,6 +44,7 @@ const defaultProps = {
   assetsPath: '/',
   vertigoControls: false as boolean | ExtendedVertigoProps,
   minActiveDuration: 30,
+  fullscreenKey: null as KeyboardFilterDeclaration | null,
 }
 
 type Props = Partial<typeof defaultProps> & { children?: React.ReactNode }
@@ -86,6 +88,18 @@ function ServerProofThreeProvider(incomingProps: Props) {
     })
 
     yield handleAnyUserInteraction(three.ticker.requestActivation)
+
+    if (props.fullscreenKey) {
+      yield handleKeyboard([
+        [props.fullscreenKey, () => {
+          if (document.fullscreenElement) {
+            document.exitFullscreen()
+          } else {
+            document.documentElement.requestFullscreen()
+          }
+        }]
+      ])
+    }
 
     if (vertigoControlsProps) {
       const controlsProps = typeof vertigoControlsProps === 'object' ? vertigoControlsProps : {}
