@@ -1,0 +1,9 @@
+
+.input-border {
+  position: absolute;
+  overflow: hidden;
+  inset: var(--input-vertical-padding, .1em) 0;
+  border-radius: var(--input-border-radius, .25em);
+  border: var(--input-border, 1px solid #fff3);
+  pointer-events: none;
+}
