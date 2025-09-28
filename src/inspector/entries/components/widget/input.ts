@@ -3,7 +3,7 @@ import { DestroyableObject } from 'some-utils-ts/types'
 
 import { FieldComponent } from '../base'
 
-import css from './input.css.ts'
+import css from './input.css'
 
 type Pointer = { x: number; y: number; shiftKey: boolean; altKey: boolean; ctrlKey: boolean; metaKey: boolean }
 type EnumLike = { [key: string]: string | number }
