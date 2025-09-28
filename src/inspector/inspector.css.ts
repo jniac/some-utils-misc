@@ -32,7 +32,7 @@ input {
 .inspector-header {
   display: flex;
   flex-direction: column;
-  padding-bottom: 1em;
+  padding-bottom: .75em;
 }
 
 .inspector-content {
