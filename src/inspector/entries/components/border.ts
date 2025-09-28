@@ -1,6 +1,6 @@
 import { FieldComponent } from './base'
 
-import css from './border.css.ts'
+import css from './border.css'
 
 export class Border extends FieldComponent {
   static css = css
