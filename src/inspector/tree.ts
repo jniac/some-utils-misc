@@ -149,7 +149,7 @@ export class FieldTree {
           queue2.push(new MetaProperty({
             key: `${current.name}-spacer`,
             type: 'spacer',
-            defaultValue: '',
+            value: '',
             order: current.order,
           }))
         }
@@ -161,7 +161,7 @@ export class FieldTree {
             new MetaProperty({
               key: current.name,
               type: 'group',
-              defaultValue: current.path,
+              value: current.path,
               order: current.order,
             })
           )

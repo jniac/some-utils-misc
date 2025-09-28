@@ -12,21 +12,7 @@ export function splitMetaPath(path?: string): string[] {
     .map(token => token.trim())
 }
 
-export type RawMetaProperty<T = any> = {
-  /**
- * Key of the property. Meant to be unique within the context of the object.
- * 
- * This is used to infer the display name in the inspector (e.g., `meshScale` becomes "Mesh Scale").
- */
-  key: string
-
-  /**
-   * Default value of the property.
-   * 
-   * This is used to initialize the property in the inspector and can be overridden by user input or other means.
-   */
-  defaultValue: T
-
+export type RawMetaPropertyBase = {
   /**
    * Type of the property, defined using a simple DSL (Domain-Specific Language).
    * 
@@ -60,11 +46,29 @@ export type RawMetaProperty<T = any> = {
   path?: string
 }
 
+export type RawMetaProperty<T = any> = RawMetaPropertyBase & {
+  /**
+   * Key of the property. Meant to be unique within the context of the object.
+   * 
+   * This is used to infer the display name in the inspector (e.g., `meshScale` becomes "Mesh Scale").
+   */
+  key: string
+
+  /**
+   * Default value of the property.
+   * 
+   * This is used to initialize the property in the inspector and can be overridden by user input or other means.
+   */
+  value: T
+}
+
+export type RawMetaPropertyAsArray<T> = [value: T, meta: RawMetaPropertyBase]
+
 export class MetaProperty<T = any> implements RawMetaProperty<T> {
   static button(key: string, callback: () => void): MetaProperty {
     return new MetaProperty({
       key,
-      defaultValue: callback,
+      value: callback,
       type: `button`,
     })
   }
@@ -72,12 +76,12 @@ export class MetaProperty<T = any> implements RawMetaProperty<T> {
   static spacer(size = 0.5): MetaProperty {
     return new MetaProperty({
       key: 'spacer',
-      defaultValue: size,
+      value: size,
       type: 'spacer',
     })
   }
 
-  defaultValue: T
+  value: T
 
   key: string
   path?: string
@@ -88,21 +92,21 @@ export class MetaProperty<T = any> implements RawMetaProperty<T> {
 
   constructor(props: RawMetaProperty<T>) {
     const {
-      defaultValue,
+      value,
       key,
       path,
       order,
-      type: metaType,
+      type,
       description,
     } = props
 
-    this.defaultValue = defaultValue
+    this.value = value
 
     this.key = key
     this.path = path
     this.order = order
 
-    this.type = metaType
+    this.type = type
     this.description = description
   }
 
@@ -110,34 +114,43 @@ export class MetaProperty<T = any> implements RawMetaProperty<T> {
    * Returns a clone of the default value.
    */
   cloneValue(): T {
-    if (isObject(this.defaultValue)) {
-      if ('clone' in this.defaultValue)
-        return (this.defaultValue as any).clone()
+    if (isObject(this.value)) {
+      if ('clone' in this.value)
+        return (this.value as any).clone()
 
-      if (this.defaultValue.constructor === Object)
-        return { ...this.defaultValue }
+      if (this.value.constructor === Object)
+        return { ...this.value }
 
-      throw new Error(`Cannot clone value of type ${typeof this.defaultValue}`)
+      throw new Error(`Cannot clone value of type ${typeof this.value}`)
     }
 
-    return this.defaultValue
+    return this.value
   }
 }
 
+function isRawMetaPropertyBase(value: any): value is RawMetaPropertyBase {
+  return isObject(value)
+    && 'type' in value
+    && typeof value.type === 'string'
+}
+
 export function isRawMetaProperty<T>(value: any): value is RawMetaProperty<T> {
-  return (
-    value
-    && typeof value === 'object'
+  return isRawMetaPropertyBase(value)
     && 'key' in value
-    && 'defaultValue' in value
-    && 'metaType' in value
-  )
+    && 'value' in value
+    && 'type' in value
+}
+
+export function isRawMetaPropertyAsArray<T>(value: any): value is RawMetaPropertyAsArray<T> {
+  return Array.isArray(value)
+    && value.length === 2
+    && isRawMetaPropertyBase(value[1])
 }
 
 export type InspectorMetaEntry<T = any> =
-  | RawMetaProperty<T>
+  | Omit<RawMetaProperty<T>, 'key'>
+  | RawMetaPropertyAsArray<T>
   | (() => void)
-
 
 /**
  * Represents a collection of inspector entries.
@@ -159,4 +172,3 @@ export type InspectorFlatMetaObject<T> = {
 export type InspectorSerializedMetaObject<T> = {
   [K in keyof T]: T[K] extends { toArray: (...args: any[]) => infer R } ? R : T[K]
 }
-

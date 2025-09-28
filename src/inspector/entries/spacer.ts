@@ -13,7 +13,7 @@ export class Spacer extends InspectorDomEntry {
   constructor(property: MetaProperty) {
     super()
     this.div.classList.add('inspector-spacer')
-    if (Number.isFinite(property.defaultValue))
-      this.div.style.setProperty('--spacing', property.defaultValue)
+    if (Number.isFinite(property.value))
+      this.div.style.setProperty('--spacing', property.value)
   }
 }

@@ -8,7 +8,7 @@ import { componentsCssChunks } from './entries/components'
 import { allFields, Field, fieldsCssChunks, MetaField } from './entries/fields'
 import { Group } from './entries/group'
 import { SearchEntry } from './entries/search'
-import { InspectorMetaEntry, isRawMetaProperty, MetaProperty, RawMetaProperty } from './meta-property'
+import { InspectorMetaObject, isRawMetaProperty, isRawMetaPropertyAsArray, MetaProperty, RawMetaProperty } from './meta-property'
 import { FieldTree } from './tree'
 import { prefixCssSelectors } from './utils/prefix-css-selectors'
 
@@ -27,7 +27,7 @@ function inferFields<T extends object>(instance: T): MetaProperty[] {
     const description = meta?.description
     fields.push(new MetaProperty({
       key,
-      defaultValue: value,
+      value: value,
       type,
       description,
     }))
@@ -174,11 +174,16 @@ export class Inspector {
   }
 
   registerFields(
-    entries: (RawMetaProperty | MetaProperty)[] | Record<string, Omit<InspectorMetaEntry, 'key'>>,
+    entries: (RawMetaProperty | MetaProperty)[] | InspectorMetaObject,
     params: { updatedValues: () => Record<string, any> },
   ) {
-    const parseEntries = (entries: Record<string, Omit<InspectorMetaEntry, 'key'>>): MetaProperty[] => {
+    const parseEntries = (entries: InspectorMetaObject): MetaProperty[] => {
       return Object.entries(entries).map(([key, rawEntry], index) => {
+        if (isRawMetaPropertyAsArray(rawEntry)) {
+          const [value, meta] = rawEntry
+          return new MetaProperty({ ...meta, key, value, order: index })
+        }
+
         if (rawEntry instanceof MetaProperty)
           return rawEntry
 
@@ -190,7 +195,7 @@ export class Inspector {
           return new MetaProperty({
             order: index,
             key,
-            defaultValue: entry,
+            value: entry,
             type: 'button',
           })
         }
@@ -198,7 +203,7 @@ export class Inspector {
         return new MetaProperty({
           order: index,
           key,
-          defaultValue: null,
+          value: null,
           type: 'unknown',
           description: 'Unknown type',
         })
@@ -254,7 +259,7 @@ export class Inspector {
       separator()
 
       if (metaProperty.type === 'group') {
-        const node = this.#state.fieldTree.getNodeByPath(metaProperty.defaultValue)!
+        const node = this.#state.fieldTree.getNodeByPath(metaProperty.value)!
         const group = new Group(metaProperty, node)
         group.div.onclick = () => {
           node.expanded = !node.expanded
@@ -265,7 +270,7 @@ export class Inspector {
       }
 
       if (metaProperty.type === 'button') {
-        const button = new Button(metaProperty.key, metaProperty.defaultValue)
+        const button = new Button(metaProperty.key, metaProperty.value)
         newEntry(button)
         continue
       }
@@ -276,16 +281,16 @@ export class Inspector {
         continue
       }
 
-      const metaField = MetaField.infer(metaProperty.type, metaProperty.defaultValue)
+      const metaField = MetaField.infer(metaProperty.type, metaProperty.value)
       const FieldClass = allFields[metaField.type as keyof typeof allFields] as typeof Field
 
       if (!FieldClass) {
-        const field = new allFields.unknown(metaProperty.key, metaProperty.defaultValue, metaProperty, metaField)
+        const field = new allFields.unknown(metaProperty.key, metaProperty.value, metaProperty, metaField)
         newEntry(field)
         continue
       }
 
-      const field = new FieldClass(metaProperty.key, metaProperty.defaultValue, metaProperty, metaField)
+      const field = new FieldClass(metaProperty.key, metaProperty.value, metaProperty, metaField)
       field.setValue(
         metaProperty.key in values
           ? values[metaProperty.key]
@@ -298,10 +303,13 @@ export class Inspector {
       newEntry(field)
     }
 
+    // Add a final separator
+    separator()
+
     for (const separator of wrapper.querySelectorAll('.field-separator')) {
       const isBetweenFields =
-        separator.previousElementSibling?.classList.contains('field') &&
-        separator.nextElementSibling?.classList.contains('field')
+        !!separator.previousElementSibling?.classList.contains('field') &&
+        !!separator.nextElementSibling?.classList.contains('field')
       separator.classList.toggle('between-fields', isBetweenFields)
     }
 
@@ -385,7 +393,6 @@ export class Inspector {
     overlay.style.inset = '0'
     overlay.style.zIndex = '1000'
     overlay.style.cursor = 'grabbing'
-
 
     this.div.addEventListener('overlay-start', event => {
       const { cursor } = (event as CustomEvent).detail
