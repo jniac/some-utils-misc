@@ -15,6 +15,7 @@ export class VectorField extends Field<any> {
 
   vectorKeys: string[]
   numberInputs: Record<string, NumberInput>
+  cloneValue: any
 
   constructor(key: string, defaultValue: any, metaProperty: MetaProperty, metaField: MetaField) {
     super(key, defaultValue, metaProperty, metaField, { useLabel: false })
@@ -33,6 +34,7 @@ export class VectorField extends Field<any> {
      * Create a clone of the inner value to avoid mutating the original object.
      */
     const clonedValue = deepClone(defaultValue)
+    this.cloneValue = clonedValue
 
     for (const vectorKey of this.vectorKeys) {
       const numberInput = new NumberInput(metaField, `${key}-${vectorKey}`)
@@ -77,6 +79,7 @@ export class VectorField extends Field<any> {
   override setValue(value: any, options: { silent?: boolean } = {}): this {
     super.setValue(value, options)
     for (const vectorKey of this.vectorKeys) {
+      this.cloneValue[vectorKey] = value[vectorKey]
       this.numberInputs[vectorKey].setValue(value[vectorKey], options)
     }
     return this
