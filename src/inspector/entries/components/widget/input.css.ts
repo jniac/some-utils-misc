@@ -1,3 +1,4 @@
+export default /* css */ `
 
 .input-widget {
   width: 24px;
@@ -28,3 +29,5 @@
 .input-widget svg.active {
   display: block;
 }
+
+`

@@ -1,3 +1,5 @@
+export default /* css */ `
+
 .field-color input {
   width: 100%;
   height: 100%;
@@ -16,3 +18,5 @@
 .field-color.focused .color-preview {
   border: 1px solid var(--color-focus, #fff6);
 }
+
+`

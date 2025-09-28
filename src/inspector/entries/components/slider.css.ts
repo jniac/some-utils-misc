@@ -1,3 +1,4 @@
+export default /* css */ `
 
 .slider {
   position: absolute;
@@ -45,4 +46,5 @@
   height: 100%;
   background-color:#fff3;
 }
- 
+
+`

@@ -1,3 +1,4 @@
+export default /* css */ `
 .inspector {
   --entry-width: 280px;
   --entry-height: 24px;
@@ -137,4 +138,4 @@ input {
   align-self: flex-start;
   background-color: #fff1;
 }
-
+`

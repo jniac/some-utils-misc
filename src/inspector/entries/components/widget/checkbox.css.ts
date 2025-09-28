@@ -1,6 +1,10 @@
+export default /* css */ `
+
 .checkbox-widget {
   width: var(--entry-height, 24px);
   height: var(--entry-height, 24px);
   padding: 4px;
   cursor: pointer;
 }
+
+`

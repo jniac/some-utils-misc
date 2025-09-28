@@ -4,7 +4,7 @@ import { createSvg } from '../../../svg'
 import { MetaField } from '../../fields'
 import { FieldComponent } from '../base'
 
-import css from './checkbox.css.raw'
+import css from './checkbox.css.ts'
 
 export class CheckBoxWidget extends FieldComponent {
   static css = css

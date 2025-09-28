@@ -1,3 +1,4 @@
+export default /* css */ `
 
 .input-border {
   position: absolute;
@@ -7,3 +8,5 @@
   border: var(--input-border, 1px solid #fff3);
   pointer-events: none;
 }
+
+`

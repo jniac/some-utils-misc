@@ -1,3 +1,4 @@
+export default /* css */ `
 
 .number-input {
   flex: 1;
@@ -10,3 +11,5 @@
   padding: 0 0.5em;
   outline: none;
 }
+
+`

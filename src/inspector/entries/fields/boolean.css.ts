@@ -1,3 +1,5 @@
+export default /* css */ `
+
 .field-boolean input {
   position: absolute;
   inset: 0;
@@ -6,3 +8,5 @@
   opacity: 0;
   cursor: pointer;
 }
+
+`

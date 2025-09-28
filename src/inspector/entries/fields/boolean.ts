@@ -3,7 +3,7 @@ import { CheckBoxWidget } from '../components/widget/checkbox'
 import { Field } from './base'
 import { MetaField } from './meta-field'
 
-import css from './boolean.css.raw'
+import css from './boolean.css'
 
 export class BooleanField extends Field<boolean> {
   static css = css

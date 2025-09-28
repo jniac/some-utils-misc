@@ -2,7 +2,7 @@ import { MetaProperty } from '../../meta-property'
 import { Field } from './base'
 import { MetaField } from './meta-field'
 
-import css from './color.css.raw'
+import css from './color.css'
 
 export class ColorField extends Field<string> {
   static css = css

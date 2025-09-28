@@ -12,8 +12,8 @@ import { InspectorMetaObject, isRawMetaProperty, isRawMetaPropertyAsArray, MetaP
 import { FieldTree } from './tree'
 import { prefixCssSelectors } from './utils/prefix-css-selectors'
 
-import css from './inspector.css.raw'
-import closeSvg from './svg/close.svg.raw'
+import css from './inspector.css'
+import closeSvg from './svg/close.svg'
 
 /**
  * Infer fields from an object instance.

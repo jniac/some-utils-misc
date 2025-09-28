@@ -4,7 +4,7 @@ import { DestroyableObject } from 'some-utils-ts/types'
 
 import { FieldComponent } from './base'
 
-import css from './slider.css.raw'
+import css from './slider.css'
 
 export class Slider extends FieldComponent {
   static css = css

@@ -8,11 +8,7 @@ import { Translate3dWidget } from '../components/widget/translate-3d'
 import { Field } from './base'
 import { MetaField } from './meta-field'
 
-import css from './vector.css.raw'
-
 export class VectorField extends Field<any> {
-  static css = css
-
   vectorKeys: string[]
   numberInputs: Record<string, NumberInput>
   cloneValue: any
