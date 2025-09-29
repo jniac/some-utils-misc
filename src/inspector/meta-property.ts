@@ -148,7 +148,7 @@ export function isRawMetaPropertyAsArray<T>(value: any): value is RawMetaPropert
 }
 
 export type InspectorMetaEntry<T = any> =
-  | Omit<RawMetaProperty<T>, 'key'>
+  | Omit<RawMetaProperty<T>, 'key' | 'type'> // Allow omitting key and type, as they can be inferred from the object context / or the value itself
   | RawMetaPropertyAsArray<T>
   | (() => void)
 

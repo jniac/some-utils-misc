@@ -187,7 +187,11 @@ export class Inspector {
         if (rawEntry instanceof MetaProperty)
           return rawEntry
 
-        const entry = { ...rawEntry, key }
+        const entry = {
+          ...rawEntry,
+          key,
+          type: (rawEntry as any).type ?? (typeof (rawEntry as any).value),
+        }
         if (isRawMetaProperty(entry))
           return new MetaProperty({ ...entry, order: index })
 
