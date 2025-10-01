@@ -119,6 +119,13 @@ function ServerProofThreeProvider(incomingProps: Props) {
         controls.start()
       }
 
+      yield handleKeyboard([
+        [{ code: 'Tab', modifiers: 'alt' }, (info) => {
+          info.event.preventDefault()
+          controls.actions.toggleAlternative()
+        }]
+      ])
+
       yield controls.destroy
 
       const onVertigoControlsMessage = (m: Message<any>): void => {
