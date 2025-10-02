@@ -89,17 +89,21 @@ function ServerProofThreeProvider(incomingProps: Props) {
 
     yield handleAnyUserInteraction(three.ticker.requestActivation)
 
+    const toggleFullscreen = () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen()
+      } else {
+        document.documentElement.requestFullscreen()
+      }
+    }
+
     if (props.fullscreenKey) {
       yield handleKeyboard([
-        [props.fullscreenKey, () => {
-          if (document.fullscreenElement) {
-            document.exitFullscreen()
-          } else {
-            document.documentElement.requestFullscreen()
-          }
-        }]
+        [props.fullscreenKey, toggleFullscreen]
       ])
     }
+
+    yield Message.on('TOGGLE_FULLSCREEN', toggleFullscreen)
 
     if (vertigoControlsProps) {
       const controlsProps = typeof vertigoControlsProps === 'object' ? vertigoControlsProps : {}
