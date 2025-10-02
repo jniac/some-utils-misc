@@ -12,6 +12,10 @@ const defaultProps = {
    * Name of the ticker to use for the FPS meter.
    */
   tickerName: 'three',
+  /**
+   * Number of decimal places to display in the FPS meter.
+   */
+  precision: 1
 }
 
 type Props = HTMLProps<HTMLDivElement> & Partial<typeof defaultProps>
@@ -22,13 +26,13 @@ type Props = HTMLProps<HTMLDivElement> & Partial<typeof defaultProps>
  * Works with the 'three' ticker by default, but you can specify a different ticker name if needed.
  */
 export function FpsMeter(props: Props) {
-  const { frequency, tickerName, ...rest } = { ...defaultProps, ...props }
+  const { frequency, tickerName, precision, ...rest } = { ...defaultProps, ...props }
   const { ref } = useEffects<HTMLDivElement>(function* () {
     const ticker = Ticker.get('three')
     yield ticker.onTick({ timeInterval: 1 / 3 }, () => {
-      ref.current.innerText = `${ticker.averageFps.toFixed(1)} fps`
+      ref.current.innerText = `${ticker.averageFps.toFixed(precision)} fps`
     })
-  }, [frequency, tickerName])
+  }, [frequency, tickerName, precision])
   return (
     <div ref={ref} {...rest}>
       -- fps
