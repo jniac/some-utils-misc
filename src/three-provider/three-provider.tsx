@@ -25,6 +25,9 @@ export function ThreeInstance<T extends THREE.Object3D>(incomingProps: Parameter
 }
 
 type ExtendedVertigoProps = VertigoProps & Partial<{
+  /**
+   * If true, the controls will be fixed in place and not respond to user input.
+   */
   fixed: boolean
   panInput: VertigoControlInputString
   orbitInput: VertigoControlInputString
