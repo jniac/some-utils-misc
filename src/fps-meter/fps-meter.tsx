@@ -1,3 +1,5 @@
+'use client'
+
 import { HTMLProps } from 'react'
 
 import { useEffects } from 'some-utils-react/hooks/effects'
