@@ -1,3 +1,5 @@
+'use client'
+
 import { useContext, useMemo } from 'react'
 import { Group, Object3D } from 'three'
 
