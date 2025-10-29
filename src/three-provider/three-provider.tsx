@@ -149,6 +149,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
       }
       yield Message.on('VERTIGO_CONTROLS', onVertigoControlsMessage) // for backwards compatibility
       yield Message.on(VertigoControls, onVertigoControlsMessage)
+      yield Message.on([three, VertigoControls], onVertigoControlsMessage) // for context-specific controls
 
       // order: -1 to run before the default "render" tick
       yield three.ticker.onTick({ name: 'VertigoControls', phase: TickPhase.BeforeRender, order: -1 }, tick => {
