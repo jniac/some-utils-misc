@@ -89,16 +89,40 @@ export function useThreeWebGPU(
   return null
 }
 
-export function useGroup(
+type UseGroupArguments0 = [
   name: string,
   effects?: (group: Group, three: ThreeBaseContext, state: UseEffectsEffect) => UseEffectsReturnable,
   deps?: UseEffectsDeps,
-): Group {
+]
+
+type UseGroupArguments1 = [
+  name: string,
+  transform: TransformDeclaration,
+  effects: (group: Group, three: ThreeBaseContext, state: UseEffectsEffect) => UseEffectsReturnable,
+  deps?: UseEffectsDeps,
+]
+
+function parseUseGroupArguments(args: UseGroupArguments0 | UseGroupArguments1): UseGroupArguments1 {
+  const isArguments1 = args.length >= 3 && typeof args[2] === 'function'
+  if (isArguments1) {
+    return args as UseGroupArguments1
+  } else {
+    const [name, effects = function* () { }, deps] = args as UseGroupArguments0
+    return [name, {}, effects, deps]
+  }
+}
+
+export function useGroup(...args: UseGroupArguments0 | UseGroupArguments1): Group {
+  const [name, transform, effects, deps] = parseUseGroupArguments(args)
   const group = useMemo(() => new Group(), [])
   group.name = name
+  setup(group, transform)
 
   useThree(async function* (three, state) {
-    three.scene.add(group)
+    setup(group, {
+      parent: three.scene,
+      ...transform, // allow overriding parent
+    })
     yield () => {
       group.clear()
       group.removeFromParent()
