@@ -8,6 +8,7 @@ import { TransformDeclaration } from 'some-utils-three/declaration'
 import { ThreeBaseContext, ThreeContextType } from 'some-utils-three/experimental/contexts/types'
 import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
+import { TransformProps } from 'some-utils-three/utils/transform'
 import { allDescendantsOf, setup } from 'some-utils-three/utils/tree'
 import { OneOrMany } from 'some-utils-ts/types'
 
@@ -42,7 +43,7 @@ export function useThree(
 export function useThreeWebGL(
   effects?: UseEffectsCallback<ThreeWebGLContext>,
   deps?: UseEffectsDeps,
-): ThreeWebGLContext | null {
+): ThreeWebGLContext {
   const three = useThree(async function* (three, effect) {
     if (three.type === ThreeContextType.WebGL && effects) {
       const fx = effects as UseEffectsCallback<ThreeBaseContext>
@@ -56,10 +57,12 @@ export function useThreeWebGL(
       }
     }
   }, deps) as ThreeWebGLContext
+
   if (three.type === ThreeContextType.WebGL) {
     return three
   }
-  return null
+
+  throw new Error('No WebGL context available')
 }
 
 /**
@@ -89,16 +92,18 @@ export function useThreeWebGPU(
   return null
 }
 
+type GroupEffects = (group: Group, three: ThreeBaseContext, state: UseEffectsEffect) => UseEffectsReturnable
+
 type UseGroupArguments0 = [
   name: string,
-  effects?: (group: Group, three: ThreeBaseContext, state: UseEffectsEffect) => UseEffectsReturnable,
+  effects?: GroupEffects,
   deps?: UseEffectsDeps,
 ]
 
 type UseGroupArguments1 = [
   name: string,
   transform: TransformDeclaration,
-  effects: (group: Group, three: ThreeBaseContext, state: UseEffectsEffect) => UseEffectsReturnable,
+  effects: GroupEffects,
   deps?: UseEffectsDeps,
 ]
 
@@ -112,7 +117,9 @@ function parseUseGroupArguments(args: UseGroupArguments0 | UseGroupArguments1): 
   }
 }
 
-export function useGroup(...args: UseGroupArguments0 | UseGroupArguments1): Group {
+export function useGroup(name: string, effects?: GroupEffects, deps?: UseEffectsDeps): Group
+export function useGroup(name: string, transform: TransformProps, effects: GroupEffects, deps?: UseEffectsDeps): Group
+export function useGroup(...args: any): Group {
   const [name, transform, effects, deps] = parseUseGroupArguments(args)
   const group = useMemo(() => new Group(), [])
   group.name = name
