@@ -114,7 +114,9 @@ function ServerProofThreeProvider(incomingProps: Props) {
         .initialize(
           controlsProps.eventTarget === 'canvas'
             ? three.domElement
-            : ref.current!)
+            : ref.current!,
+          three.scene,
+        )
 
       Object.assign(controls.inputConfig, controlsProps.inputConfig)
       controls.parsePanInputs(controlsProps.panInput ?? '')
