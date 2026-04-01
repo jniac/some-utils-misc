@@ -48,6 +48,8 @@ const defaultProps = {
   vertigoControls: false as boolean | ExtendedVertigoProps,
   minActiveDuration: 30,
   fullscreenKey: null as KeyboardFilterDeclaration | null,
+
+  stencil: false,
 }
 
 type Props = Partial<typeof defaultProps> & { children?: React.ReactNode }
@@ -61,9 +63,13 @@ function ServerProofThreeProvider(incomingProps: Props) {
   const typeRef = useRef(undefined as undefined | 'webgl' | 'webgpu')
   if (typeRef.current && typeRef.current !== type)
     console.warn('ThreeProvider: the prop "type" is not intended to change after the component is mounted.')
+
+  if (type === 'webgpu' && props.stencil)
+    console.warn('Stencil buffer is not currently supported in WebGPU. The "stencil" prop will be ignored.')
   typeRef.current = type
+
   const three: ThreeBaseContext = useMemo(() => type === 'webgl'
-    ? new ThreeWebGLContext()
+    ? new ThreeWebGLContext({ useStencil: props.stencil })
     : new ThreeWebGPUContext(), [type])
 
   three.ticker.set({ minActiveDuration: props.minActiveDuration })
