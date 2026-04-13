@@ -49,6 +49,8 @@ const defaultProps = {
   minActiveDuration: 30,
   fullscreenKey: null as KeyboardFilterDeclaration | null,
 
+  fxaa: false,
+  smaa: false,
   stencil: false,
 }
 
@@ -72,7 +74,21 @@ function ServerProofThreeProvider(incomingProps: Props) {
     ? new ThreeWebGLContext({ useStencil: props.stencil })
     : new ThreeWebGPUContext(), [type])
 
-  three.ticker.set({ minActiveDuration: props.minActiveDuration })
+  switch (type) {
+    case 'webgl': {
+      const webgl = three as ThreeWebGLContext
+      webgl.pipeline.basicPasses.fxaa.enabled = props.fxaa
+      webgl.pipeline.basicPasses.smaa.enabled = props.smaa
+      break
+    }
+    default: {
+      if (props.fxaa || props.smaa) {
+        console.warn('FXAA and SMAA are only currently supported in WebGL. The "fxaa" and "smaa" props will be ignored.')
+      }
+    }
+  }
+
+  three.ticker.set({ inactivityWaitDurationMinimum: props.minActiveDuration })
   // three.loader.setPath(assetsPath)
 
   const { ref } = useLayoutEffects<HTMLDivElement>({ debounce: true }, function* (div, effect) {
