@@ -4,6 +4,7 @@ import { DestroyableObject } from 'some-utils-ts/types'
 
 import { FieldComponent } from './base'
 
+import { ListenerMap } from '../../utils/collections'
 import css from './slider.css'
 
 export class Slider extends FieldComponent {
@@ -12,10 +13,11 @@ export class Slider extends FieldComponent {
   #state = {
     min: 0,
     max: 0,
+    alpha: 0,
     middle: NaN,
     dragMode: false,
     destroyable: new DestroyableInstance(),
-    listeners: new Set<(alpha: number) => void>(),
+    listeners: new ListenerMap<'drag' | 'drag-enter' | 'drag-exit', number>(),
   }
 
   constructor() {
@@ -54,54 +56,67 @@ export class Slider extends FieldComponent {
   }
 
   onDrag(listener: (value: number) => void): DestroyableObject {
-    this.#state.listeners.add(listener)
+    this.#state.listeners.add('drag', listener)
     return {
       destroy: () => {
-        this.#state.listeners.delete(listener)
+        this.#state.listeners.delete('drag', listener)
       }
     }
   }
 
-  enterDragMode() {
+  onDragEnter(listener: (value: number) => void): DestroyableObject {
+    return this.#state.listeners.on('drag-enter', listener)
+  }
+
+  onDragExit(listener: (value: number) => void): DestroyableObject {
+    return this.#state.listeners.on('drag-exit', listener)
+  }
+
+  #value(): number {
+    const { min, max, middle, alpha } = this.#state
+    return Number.isNaN(middle)
+      ? alpha * (max - min) + min
+      : interpolateWithMidPoint(min, max, middle, alpha)
+  }
+
+  #enterDragMode() {
     if (this.#state.dragMode)
       return
 
     this.#state.dragMode = true
     this.div.classList.add('drag-mode')
+
+    console.log('entering drag mode')
+    this.#state.listeners.call('drag-enter', this.#value())
   }
 
-  exitDragMode() {
+  #exitDragMode() {
     if (!this.#state.dragMode)
       return
 
     this.#state.dragMode = false
     this.div.classList.remove('drag-mode')
+
+    this.#state.listeners.call('drag-exit', this.#value())
   }
 
   #initDrag() {
     const update = (clientX: number) => {
       const rect = this.div.getBoundingClientRect()
 
-      const alpha = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+      this.#state.alpha = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
 
-      const { min, max, middle } = this.#state
-
-      const value = Number.isNaN(middle)
-        ? alpha * (max - min) + min
-        : interpolateWithMidPoint(min, max, middle, alpha)
-
-      for (const listener of this.#state.listeners)
-        listener(value)
+      this.#state.listeners.call('drag', this.#value())
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Shift')
-        this.enterDragMode()
+        this.#enterDragMode()
     }
 
     const onKeyUp = (event: KeyboardEvent) => {
       if (event.key === 'Shift')
-        this.exitDragMode()
+        this.#exitDragMode()
     }
 
     const onPointerDown = (downEvent: PointerEvent) => {
@@ -120,14 +135,15 @@ export class Slider extends FieldComponent {
       const onPointerUp = () => {
         document.removeEventListener('pointermove', onPointerMove)
         document.removeEventListener('pointerup', onPointerUp)
+        this.#exitDragMode()
       }
 
       document.addEventListener('pointermove', onPointerMove)
       document.addEventListener('pointerup', onPointerUp)
+      this.#enterDragMode()
 
       update(downEvent.clientX)
     }
-
 
     this.div.addEventListener('pointerdown', onPointerDown)
     document.addEventListener('keydown', onKeyDown)

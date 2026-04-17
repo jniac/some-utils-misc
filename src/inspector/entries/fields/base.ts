@@ -100,6 +100,8 @@ export class Field<T = any> extends InspectorDomEntry implements ObservableCore<
   }
 
   setFocused(focused: boolean): this {
+    if (this.state.focused === focused)
+      return this
     this.state.focused = focused
     this.div.classList.toggle('focused', focused)
     return this

@@ -1,6 +1,7 @@
 
 import { DestroyableObject } from 'some-utils-ts/types'
 
+import { ListenerMap } from '../../utils/collections'
 import { formatNumber } from '../../utils/format-number'
 import { safeEvaluate } from '../../utils/safe-evaluate'
 import { MetaField } from '../fields'
@@ -80,7 +81,8 @@ export class NumberInput extends FieldComponent {
 
   #state = {
     value: NaN,
-    listeners: new Set<(value: number) => void>(),
+    focused: false,
+    listeners: new ListenerMap<'change' | 'enter-focus' | 'exit-focus', number>(),
   }
 
   get value() { return this.#state.value }
@@ -179,6 +181,8 @@ export class NumberInput extends FieldComponent {
         this.slider.setFill(fill)
       }
       this.slider.onDrag(value => this.setValue(value))
+      this.slider.onDragEnter(() => this.setFocused(true))
+      this.slider.onDragExit(() => this.setFocused(false))
       this.div.appendChild(this.slider.div)
     }
 
@@ -190,13 +194,15 @@ export class NumberInput extends FieldComponent {
   }
 
   onChange(callback: (value: number) => void): DestroyableObject {
-    this.#state.listeners.add(callback)
+    return this.#state.listeners.on('change', callback)
+  }
 
-    return {
-      destroy: () => {
-        this.#state.listeners.delete(callback)
-      },
-    }
+  onFocusEnter(callback: (value: number) => void): DestroyableObject {
+    return this.#state.listeners.on('enter-focus', callback)
+  }
+
+  onFocusExit(callback: (value: number) => void): DestroyableObject {
+    return this.#state.listeners.on('exit-focus', callback)
   }
 
   shiftValue(scalarBase: number, shift: boolean, alt: boolean): void {
@@ -237,10 +243,17 @@ export class NumberInput extends FieldComponent {
   }
 
   setFocused(focused: boolean): this {
+    if (this.#state.focused === focused)
+      return this
+
+    this.#state.focused = focused
+
     if (focused) {
       this.input.addEventListener('keydown', this.#onKeyDown)
+      this.#state.listeners.call('enter-focus', this.value)
     } else {
       this.input.removeEventListener('keydown', this.#onKeyDown)
+      this.#state.listeners.call('exit-focus', this.value)
     }
     return this
   }
@@ -277,8 +290,7 @@ export class NumberInput extends FieldComponent {
     })
 
     if (!options.silent)
-      for (const listener of this.#state.listeners)
-        listener(value)
+      this.#state.listeners.call('change', value)
 
     return this
   }

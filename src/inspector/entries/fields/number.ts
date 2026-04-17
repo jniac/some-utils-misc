@@ -16,11 +16,17 @@ export class NumberField extends Field<number> {
     this.numberInput.onChange(value => {
       this.setValue(value)
     })
+    this.numberInput.onFocusEnter(() => {
+      this.setFocused(true)
+    })
+    this.numberInput.onFocusExit(() => {
+      this.setFocused(false)
+    })
 
-    this.#initDrag()
+    this.#initLabelDrag()
   }
 
-  #initDrag() {
+  #initLabelDrag() {
     const onPointerDown = (event: PointerEvent) => {
       if (event.button !== 0)
         return
