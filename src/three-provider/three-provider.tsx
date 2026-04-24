@@ -12,7 +12,7 @@ import { VertigoControlInputString, VertigoControls } from 'some-utils-three/cam
 import { PlaneDeclaration } from 'some-utils-three/declaration'
 import { ThreePointerEvent } from 'some-utils-three/experimental/contexts/pointer'
 import { ThreeBaseContext, TickPhase } from 'some-utils-three/experimental/contexts/types'
-import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
+import { BasicPipeline, ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
 import { Message } from 'some-utils-ts/message'
 
@@ -77,8 +77,14 @@ function ServerProofThreeProvider(incomingProps: Props) {
   switch (type) {
     case 'webgl': {
       const webgl = three as ThreeWebGLContext
-      webgl.pipeline.basicPasses.fxaa.enabled = props.fxaa
-      webgl.pipeline.basicPasses.smaa.enabled = props.smaa
+      if (webgl.pipeline instanceof BasicPipeline) {
+        webgl.pipeline.basicPasses.fxaa.enabled = props.fxaa
+        webgl.pipeline.basicPasses.smaa.enabled = props.smaa
+      } else {
+        if (props.fxaa || props.smaa) {
+          console.warn('FXAA and SMAA are only currently supported with the BasicPipeline. The "fxaa" and "smaa" props will be ignored.')
+        }
+      }
       break
     }
     default: {
