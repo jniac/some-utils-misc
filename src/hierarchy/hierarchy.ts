@@ -1,5 +1,8 @@
 import { TreeNode } from 'some-utils-ts/experimental/layout/flex/TreeNode'
 
+import { handlePointer } from 'some-utils-dom/handle/pointer'
+import { dumpDestroyables } from 'some-utils-ts/misc/destroy'
+import { Destroyable } from 'some-utils-ts/types'
 import css from './hierarchy.css'
 
 type HierarchyNodeState = {
@@ -9,7 +12,8 @@ type HierarchyNodeState = {
 
 class HierarchyNode<T = any> extends TreeNode {
   value: T | null = null
-  div: HTMLDivElement = null!
+  div: HTMLDivElement | null = null
+
   state: HierarchyNodeState = {
     expanded: true,
     selected: false,
@@ -86,6 +90,7 @@ export class HierarchyView<T = any> {
 
   #private: {
     tree: HierarchyNode<T>
+    destroyables: Destroyable[]
     destroy: () => void
     destroyed: boolean
     options: HierarchyOptions<T>
@@ -106,7 +111,13 @@ export class HierarchyView<T = any> {
     )
 
     const destroy = () => {
+      if (this.#private.destroyed)
+        return
+
       sizeObserver.disconnect()
+      dumpDestroyables(this.#private.destroyables)
+      this.#private.destroyables = []
+      this.#private.selection.clear()
       this.#private.destroyed = true
     }
 
@@ -116,7 +127,25 @@ export class HierarchyView<T = any> {
       destroyed: false,
       options,
       selection: new Set<HierarchyNode<T>>(),
+      destroyables: [],
     }
+
+    this.#private.destroyables.push(
+      handlePointer(this.div, {
+        onTap: info => {
+          const target = info.downTarget as HTMLElement
+          const node = tree.find(n => !!n.div && (n.div === target || n.div.contains(target)))
+          if (!node)
+            throw new Error('Oops, Node not found for div (???)')
+          if (info.downTarget.classList.contains('expand-toggle')) {
+            this.#handleNodeToggleTap(node, info.tapCount)
+          }
+          if (info.downTarget.classList.contains('name')) {
+            this.#handleNodeNameTap(node, info.originalDownEvent)
+          }
+        },
+      }),
+    )
 
     ensureStyle()
   }
@@ -153,16 +182,13 @@ export class HierarchyView<T = any> {
       toggle.classList.add('expand-toggle')
       if (node.children.length > 0) {
         toggle.classList.add(node.state.expanded ? 'expanded' : 'minimized')
-        toggle.addEventListener('click', () => {
-          node.state.expanded = !node.state.expanded
-          this.#build()
-        })
       } else {
         toggle.classList.add('empty')
       }
       div.append(toggle)
 
       const name = document.createElement('div')
+      name.classList.add('name')
       name.textContent = extractName(node.value)
       div.append(name)
 
@@ -173,54 +199,6 @@ export class HierarchyView<T = any> {
         div.append(count)
       }
 
-      div.onclick = event => {
-        if (event.target === toggle)
-          return
-
-        const { selection } = this.#private
-        const newSelection = new Set<HierarchyNode<T>>()
-
-        if (event.shiftKey) {
-          for (const node of selection) {
-            newSelection.add(node)
-          }
-
-          if (selection.has(node)) {
-            newSelection.delete(node)
-          } else {
-            newSelection.add(node)
-          }
-        }
-
-        else {
-          if (selection.size === 1 && selection.has(node))
-            return
-
-          newSelection.add(node)
-        }
-
-        for (const node of selection) {
-          if (newSelection.has(node) === false) {
-            // node is deselected
-            node.div.classList.remove('selected')
-            node.state.selected = false
-          }
-        }
-        for (const node of newSelection) {
-          if (selection.has(node) === false) {
-            // node is selected
-            node.state
-            node.div.classList.add('selected')
-            node.state.selected = true
-          }
-        }
-
-        this.#private.selection = newSelection
-        options.onSelectionChange?.([...newSelection].map(n => n.value!))
-
-        event.preventDefault()
-      }
-
       return div
     }))
 
@@ -229,7 +207,7 @@ export class HierarchyView<T = any> {
       for (const node of tree.flat()) {
         states[node.tid] = node.state
         if (node.state.selected) {
-          node.div.classList.add('selected')
+          node.div?.classList.add('selected')
           this.#private.selection.add(node)
         }
       }
@@ -238,5 +216,66 @@ export class HierarchyView<T = any> {
       }
       localStorage.setItem(options.cacheKey, JSON.stringify(states))
     }
+  }
+
+  #handleNodeToggleTap(node: HierarchyNode<T>, tapCount: number) {
+    if (tapCount === 1) {
+      node.state.expanded = !node.state.expanded
+    } else {
+      let expand = true
+      for (const descendant of node.allDescendants()) {
+        if (descendant.hasChild()) {
+          expand = descendant.state.expanded === false
+          break
+        }
+      }
+      for (const descendant of node.allDescendants()) {
+        descendant.state.expanded = expand
+      }
+    }
+    this.#build()
+  }
+
+  #handleNodeNameTap(node: HierarchyNode<T>, modifiers: { shiftKey: boolean }) {
+    const { selection, options } = this.#private
+    const newSelection = new Set<HierarchyNode<T>>()
+
+    if (modifiers.shiftKey) {
+      for (const node of selection) {
+        newSelection.add(node)
+      }
+
+      if (selection.has(node)) {
+        newSelection.delete(node)
+      } else {
+        newSelection.add(node)
+      }
+    }
+
+    else {
+      if (selection.size === 1 && selection.has(node))
+        return
+
+      newSelection.add(node)
+    }
+
+    for (const node of selection) {
+      if (newSelection.has(node) === false) {
+        // node is deselected
+        node.div?.classList.remove('selected')
+        node.state.selected = false
+      }
+    }
+    for (const node of newSelection) {
+      if (selection.has(node) === false) {
+        // node is selected
+        node.state
+        node.div?.classList.add('selected')
+        node.state.selected = true
+      }
+    }
+
+    this.#private.selection = newSelection
+    options.onSelectionChange?.([...newSelection].map(n => n.value!))
   }
 }
