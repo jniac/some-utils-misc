@@ -1,10 +1,11 @@
 export default /* css */ `
 .HierarchyView {
   --entry-height: 16px;
+  --entry-gap: 2px;
   
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: scroll;
 
   font-size: calc(var(--entry-height) * 0.8);
 
@@ -13,10 +14,16 @@ export default /* css */ `
   display: flex;
   flex-direction: column;
   gap: 2px;
+
+  scrollbar-width: none;
+}
+
+.HierarchyView::-webkit-scrollbar {
+  display: none;
 }
 
 .HierarchyView .entry {
-  height: var(--entry-height);
+  flex: 0 0 var(--entry-height);
   line-height: var(--entry-height);
 
   display: flex;
@@ -43,7 +50,7 @@ export default /* css */ `
 
 .HierarchyView .entry .expand-toggle {
   display: inline-block;
-  width: var(--entry-height);
+  flex: 0 0 var(--entry-height);
   height: var(--entry-height);
   line-height: var(--entry-height);
   text-align: center;
@@ -58,5 +65,11 @@ export default /* css */ `
 
 .HierarchyView .entry .expand-toggle.empty {
   mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWRvdC1pY29uIGx1Y2lkZS1kb3QiPjxjaXJjbGUgY3g9IjEyLjEiIGN5PSIxMi4xIiByPSIxIi8+PC9zdmc+');
+}
+
+.HierarchyView .entry .name {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 `

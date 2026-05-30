@@ -49,6 +49,7 @@ function buildTree<T>(
         for (const node of root.flat()) {
           if (node.tid in states) {
             node.state = states[node.tid]
+            node.state.selected = false // don't restore selection, as the underlying objects might have changed
           }
         }
       } catch (e) { }
@@ -192,7 +193,7 @@ export class HierarchyView<T = any> {
       name.textContent = extractName(node.value)
       div.append(name)
 
-      if (node.state.expanded === false) {
+      if (node.isRoot() || (node.state.expanded === false && node.hasChild())) {
         const count = document.createElement('div')
         count.classList.add('count')
         count.textContent = `(${node.leavesCount()})`
