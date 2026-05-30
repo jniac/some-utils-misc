@@ -2,9 +2,10 @@ import { interpolateWithMidPoint, inverseInterpolateWithMidPoint } from 'some-ut
 import { DestroyableInstance } from 'some-utils-ts/misc/destroy'
 import { DestroyableObject } from 'some-utils-ts/types'
 
+import { ListenerMap } from '../../utils/collections'
+import { OnChangeListener, UserEvent } from '../fields'
 import { FieldComponent } from './base'
 
-import { ListenerMap } from '../../utils/collections'
 import css from './slider.css'
 
 export class Slider extends FieldComponent {
@@ -17,7 +18,7 @@ export class Slider extends FieldComponent {
     middle: NaN,
     dragMode: false,
     destroyable: new DestroyableInstance(),
-    listeners: new ListenerMap<'drag' | 'drag-enter' | 'drag-exit', number>(),
+    listeners: new ListenerMap<'drag' | 'drag-enter' | 'drag-exit', OnChangeListener<number>>(),
   }
 
   constructor() {
@@ -86,8 +87,7 @@ export class Slider extends FieldComponent {
     this.#state.dragMode = true
     this.div.classList.add('drag-mode')
 
-    console.log('entering drag mode')
-    this.#state.listeners.call('drag-enter', this.#value())
+    this.#state.listeners.call('drag-enter', this.#value(), { userEvent: UserEvent.Drag })
   }
 
   #exitDragMode() {
@@ -97,7 +97,7 @@ export class Slider extends FieldComponent {
     this.#state.dragMode = false
     this.div.classList.remove('drag-mode')
 
-    this.#state.listeners.call('drag-exit', this.#value())
+    this.#state.listeners.call('drag-exit', this.#value(), { userEvent: UserEvent.Drag })
   }
 
   #initDrag() {
@@ -106,7 +106,7 @@ export class Slider extends FieldComponent {
 
       this.#state.alpha = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
 
-      this.#state.listeners.call('drag', this.#value())
+      this.#state.listeners.call('drag', this.#value(), { userEvent: UserEvent.Drag })
     }
 
     const onKeyDown = (event: KeyboardEvent) => {

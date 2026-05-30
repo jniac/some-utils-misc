@@ -13,6 +13,18 @@ import { createSvg } from '../../svg'
 import { InspectorDomEntry } from '../base'
 import { MetaField } from './meta-field'
 
+export enum UserEvent {
+  TextInput = 'text-input',
+  Drag = 'drag',
+}
+
+export type ChangeInfo = {
+  userEvent?: UserEvent
+  subKey?: string
+}
+
+export type OnChangeListener<T> = (value: T, info: ChangeInfo) => void
+
 export class Field<T = any> extends InspectorDomEntry implements ObservableCore<T> {
   readonly key: string
   readonly metaProperty: MetaProperty
@@ -115,13 +127,20 @@ export class Field<T = any> extends InspectorDomEntry implements ObservableCore<
    * @param value The new value to set.
    * @returns The field instance.
    */
-  setValue(value: T, options: { silent?: boolean } = {}): this {
+  setValue(value: T, options: { silent?: boolean, userEvent?: UserEvent, subKey?: string } = {}): this {
     if (deepEqual(value, this.state.value))
       return this
 
     if (this.state.value === undefined) {
       this.state.value = deepClone(value)
       this.state.valueOld = deepClone(value)
+    }
+
+    if (this.metaProperty.sanitizeValue) {
+      value = this.metaProperty.sanitizeValue(value, {
+        userEvent: options.userEvent,
+        subKey: options.subKey,
+      })
     }
 
     if (isObject(this.state.value)) {

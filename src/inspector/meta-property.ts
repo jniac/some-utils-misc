@@ -1,5 +1,7 @@
 import { isObject } from 'some-utils-ts/object/common'
 
+import { ChangeInfo } from './entries/fields'
+
 /**
  * Splits a path string into its individual tokens.
  */
@@ -60,6 +62,8 @@ export type RawMetaProperty<T = any> = RawMetaPropertyBase & {
    * This is used to initialize the property in the inspector and can be overridden by user input or other means.
    */
   value: T
+
+  sanitizeValue?: (value: any, info: ChangeInfo) => T
 }
 
 export type RawMetaPropertyAsArray<T> = [value: T, meta: RawMetaPropertyBase]
@@ -82,6 +86,7 @@ export class MetaProperty<T = any> implements RawMetaProperty<T> {
   }
 
   value: T
+  sanitizeValue?: ((value: any, info: ChangeInfo) => T)
 
   key: string
   path?: string
@@ -93,6 +98,7 @@ export class MetaProperty<T = any> implements RawMetaProperty<T> {
   constructor(props: RawMetaProperty<T>) {
     const {
       value,
+      sanitizeValue,
       key,
       path,
       order,
@@ -101,6 +107,7 @@ export class MetaProperty<T = any> implements RawMetaProperty<T> {
     } = props
 
     this.value = value
+    this.sanitizeValue = sanitizeValue
 
     this.key = key
     this.path = path

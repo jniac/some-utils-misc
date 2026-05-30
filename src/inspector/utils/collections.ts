@@ -67,8 +67,11 @@ export class MultiMap<Key, Value> {
   }
 }
 
-export class ListenerMap<Event extends string, Value> extends MultiMap<Event, (value: Value) => void> {
-  on(event: Event, listener: (value: Value) => void): { destroy: () => void } {
+export class ListenerMap<
+  Event extends string,
+  Listener extends (...args: any) => void = (value: any) => void
+> extends MultiMap<Event, Listener> {
+  on(event: Event, listener: Listener): { destroy: () => void } {
     this.add(event, listener)
     return {
       destroy: () => {
@@ -77,8 +80,8 @@ export class ListenerMap<Event extends string, Value> extends MultiMap<Event, (v
     }
   }
 
-  call(event: Event, value: Value): void {
+  call(event: Event, ...args: Parameters<Listener>): void {
     for (const listener of this.get(event))
-      listener(value)
+      listener.call(null, ...args)
   }
 }

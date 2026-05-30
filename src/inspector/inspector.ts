@@ -35,7 +35,7 @@ function inferFields<T extends object>(instance: T): MetaProperty[] {
   return fields
 }
 
-export class Inspector {
+export class InspectorView {
   static inferFields = inferFields
 
   div = document.createElement('div')
@@ -65,7 +65,7 @@ export class Inspector {
   }
 
   constructor({
-    header = <Partial<typeof Inspector.defaultHeader> | false>false,
+    header = <Partial<typeof InspectorView.defaultHeader> | false>false,
     search = false
   } = {}) {
     this.div.className = 'inspector'
@@ -101,7 +101,7 @@ export class Inspector {
     return this
   }
 
-  #fillHeader(header: Partial<typeof Inspector.defaultHeader>) {
+  #fillHeader(header: Partial<typeof InspectorView.defaultHeader>) {
     const headerDiv = this.div.querySelector('.inspector-header')!
 
     headerDiv.innerHTML = /* html */`
@@ -173,6 +173,33 @@ export class Inspector {
     return { destroy }
   }
 
+  /**
+   * Usage:
+   * ```ts
+   * inspector.registerFields([
+   *   {
+   *     key: 'position',
+   *     description: 'Position of the mesh in 3D space with (1, 2, 0) as default.',
+   *     type: 'vector(x, y, z) slider(-5, 5) slider-fill(none) widget(translate-3d)',
+   *     value: new Vector3(1, 2, 0),
+   *   },
+   *   {
+   *     key: 'rotation',
+   *     type: 'vector(x,y,z) slider(-PI, PI, 1 / 180 * PI) slider-fill(none) remap(to-degrees) precision(1) widget(rotate-3d)',
+   *     value: new Euler(0, 0, 0, 'ZYX'),
+   *   },
+   * ], {
+   *   updatedValues: () => {
+   *     return {
+   *       position: mesh.position,
+   *       rotation: mesh.rotation,
+   *     }
+   *   },
+   * })
+   * ```
+   * 
+   * The `updatedValues` function is used to provide the current values of all fields. It is called on every tick, and the returned values are used to update the fields in the inspector. This allows the inspector to stay in sync with external changes to the values.
+   */
   registerFields(
     entries: (RawMetaProperty | MetaProperty)[] | InspectorMetaObject,
     params: { updatedValues: () => Record<string, any> },
@@ -409,3 +436,8 @@ export class Inspector {
     })
   }
 }
+
+/**
+ * @deprecated Use `InspectorView` instead.
+ */
+export const Inspector = InspectorView

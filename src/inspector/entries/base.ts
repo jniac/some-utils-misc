@@ -1,6 +1,5 @@
 import { DestroyableInstance } from 'some-utils-ts/misc/destroy'
 
-
 export class InspectorDomEntry extends DestroyableInstance {
   /**
    * Unique identifier for the entry.

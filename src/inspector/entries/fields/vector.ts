@@ -36,9 +36,9 @@ export class VectorField extends Field<any> {
       const numberInput = new NumberInput(metaField, `${key}-${vectorKey}`)
       this.numberInputs[vectorKey] = numberInput
       this.inputDiv.appendChild(numberInput.div)
-      numberInput.onChange(value => {
+      numberInput.onChange((value, info) => {
         clonedValue[vectorKey] = value
-        this.setValue(clonedValue)
+        this.setValue(clonedValue, { userEvent: info.userEvent, subKey: vectorKey })
       })
     }
 
@@ -72,7 +72,7 @@ export class VectorField extends Field<any> {
     }
   }
 
-  override setValue(value: any, options: { silent?: boolean } = {}): this {
+  override setValue(value: any, options: { silent?: boolean, userEvent?: any, subKey?: string } = {}): this {
     super.setValue(value, options)
     for (const vectorKey of this.vectorKeys) {
       this.cloneValue[vectorKey] = value[vectorKey]

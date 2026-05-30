@@ -1,6 +1,7 @@
 
 import { DestroyableObject } from 'some-utils-ts/types'
 
+import { OnChangeListener, UserEvent } from '../../fields'
 import { FieldComponent } from '../base'
 
 import css from './input.css'
@@ -18,7 +19,7 @@ export class InputWidget<Value, ModeEnum extends EnumLike> extends FieldComponen
     modeEnum: null as ModeEnum | null,
     mode: null as ModeEnum[keyof ModeEnum] | null,
     onModeChange: null as ((mode: ModeEnum[keyof ModeEnum]) => void) | null,
-    listeners: new Set<(value: Value) => void>(),
+    listeners: new Set<OnChangeListener<Value>>(),
   }
 
   get mode(): ModeEnum[keyof ModeEnum] {
@@ -58,7 +59,7 @@ export class InputWidget<Value, ModeEnum extends EnumLike> extends FieldComponen
     }
   }
 
-  onChange(listener: (value: Value) => void): DestroyableObject {
+  onChange(listener: (value: Value, info: { userEvent?: UserEvent, subKey?: string }) => void): DestroyableObject {
     this.#state.listeners.add(listener)
     return {
       destroy: () => {
@@ -88,7 +89,7 @@ export class InputWidget<Value, ModeEnum extends EnumLike> extends FieldComponen
 
       const value = this.#state.onDragStart!(pointer, { x: 0, y: 0 })
       for (const listener of this.#state.listeners)
-        listener(value)
+        listener(value, { userEvent: UserEvent.Drag })
 
       const onPointerMove = (moveEvent: PointerEvent) => {
         const dx = moveEvent.clientX - pointer.x
@@ -103,7 +104,7 @@ export class InputWidget<Value, ModeEnum extends EnumLike> extends FieldComponen
         const value = this.#state.onDrag!(pointer, { x: dx, y: dy })
 
         for (const listener of this.#state.listeners)
-          listener(value)
+          listener(value, { userEvent: UserEvent.Drag })
       }
 
       const onPointerUp = () => {

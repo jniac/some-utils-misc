@@ -4,7 +4,7 @@ import { DestroyableObject } from 'some-utils-ts/types'
 import { ListenerMap } from '../../utils/collections'
 import { formatNumber } from '../../utils/format-number'
 import { safeEvaluate } from '../../utils/safe-evaluate'
-import { MetaField } from '../fields'
+import { MetaField, OnChangeListener, UserEvent } from '../fields'
 import { FieldComponent } from './base'
 import { Border } from './border'
 import { Slider } from './slider'
@@ -82,7 +82,7 @@ export class NumberInput extends FieldComponent {
   #state = {
     value: NaN,
     focused: false,
-    listeners: new ListenerMap<'change' | 'enter-focus' | 'exit-focus', number>(),
+    listeners: new ListenerMap<'change' | 'enter-focus' | 'exit-focus', OnChangeListener<number>>(),
   }
 
   get value() { return this.#state.value }
@@ -169,7 +169,7 @@ export class NumberInput extends FieldComponent {
       const value = this.remap
         ? remapInverse(userValue, ...this.remap)
         : userValue
-      this.setValue(value)
+      this.setValue(value, { userEvent: UserEvent.TextInput })
     }
 
     // Quite tricky:
@@ -180,7 +180,9 @@ export class NumberInput extends FieldComponent {
         const fill = meta.argsOf('slider-fill')[0] || 'none'
         this.slider.setFill(fill)
       }
-      this.slider.onDrag(value => this.setValue(value))
+      this.slider.onDrag(value => {
+        this.setValue(value, { userEvent: UserEvent.Drag })
+      })
       this.slider.onDragEnter(() => this.setFocused(true))
       this.slider.onDragExit(() => this.setFocused(false))
       this.div.appendChild(this.slider.div)
@@ -193,15 +195,15 @@ export class NumberInput extends FieldComponent {
     }
   }
 
-  onChange(callback: (value: number) => void): DestroyableObject {
+  onChange(callback: OnChangeListener<number>): DestroyableObject {
     return this.#state.listeners.on('change', callback)
   }
 
-  onFocusEnter(callback: (value: number) => void): DestroyableObject {
+  onFocusEnter(callback: OnChangeListener<number>): DestroyableObject {
     return this.#state.listeners.on('enter-focus', callback)
   }
 
-  onFocusExit(callback: (value: number) => void): DestroyableObject {
+  onFocusExit(callback: OnChangeListener<number>): DestroyableObject {
     return this.#state.listeners.on('exit-focus', callback)
   }
 
@@ -250,15 +252,15 @@ export class NumberInput extends FieldComponent {
 
     if (focused) {
       this.input.addEventListener('keydown', this.#onKeyDown)
-      this.#state.listeners.call('enter-focus', this.value)
+      this.#state.listeners.call('enter-focus', this.value, {})
     } else {
       this.input.removeEventListener('keydown', this.#onKeyDown)
-      this.#state.listeners.call('exit-focus', this.value)
+      this.#state.listeners.call('exit-focus', this.value, {})
     }
     return this
   }
 
-  setValue(value: number, options: { silent?: boolean } = {}): this {
+  setValue(value: number, options: { silent?: boolean, userEvent?: UserEvent } = {}): this {
     const { rawProps } = this.meta
 
     if (rawProps.clamped)
@@ -290,7 +292,7 @@ export class NumberInput extends FieldComponent {
     })
 
     if (!options.silent)
-      this.#state.listeners.call('change', value)
+      this.#state.listeners.call('change', value, { userEvent: options.userEvent })
 
     return this
   }
