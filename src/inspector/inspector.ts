@@ -91,6 +91,24 @@ export class InspectorView {
     this.#state.useSearch = search
   }
 
+  setStyle(style: Partial<{ entryWidth: number | null; labelWidth: number | null }>): this {
+    if (style.entryWidth !== undefined) {
+      if (style.entryWidth === null) {
+        this.div.style.removeProperty('--entry-width')
+      } else {
+        this.div.style.setProperty('--entry-width', `${style.entryWidth}px`)
+      }
+    }
+    if (style.labelWidth !== undefined) {
+      if (style.labelWidth === null) {
+        this.div.style.removeProperty('--label-width')
+      } else {
+        this.div.style.setProperty('--label-width', `${style.labelWidth}px`)
+      }
+    }
+    return this
+  }
+
   /**
    * Attach the inspector to a parent HTML element.
    * 
