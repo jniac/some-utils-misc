@@ -43,7 +43,13 @@ input {
 }
 
 .inspector-fields {
-  overflow: hidden scroll;
+  overflow: hidden auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.inspector-fields::-webkit-scrollbar {
+  display: none;
 }
 
 .inspector-title {
