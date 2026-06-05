@@ -2,10 +2,10 @@ import { Object3D } from 'three'
 
 import { handleKeyboard } from 'some-utils-dom/handle/keyboard'
 import { useEffects } from 'some-utils-react/hooks/effects'
-import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
+import { type ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
 import { allDescendantsOf } from 'some-utils-three/utils/tree'
 import { Message } from 'some-utils-ts/message'
-import { Destroyable } from 'some-utils-ts/types'
+import { type Destroyable } from 'some-utils-ts/types'
 
 import { useThree } from './hooks'
 

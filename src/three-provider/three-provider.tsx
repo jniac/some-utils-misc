@@ -1,17 +1,17 @@
 'use client'
 
-import { CSSProperties, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
 import { handleAnyUserInteraction } from 'some-utils-dom/handle/any-user-interaction'
-import { handleKeyboard, KeyboardFilterDeclaration } from 'some-utils-dom/handle/keyboard'
+import { handleKeyboard, type KeyboardFilterDeclaration } from 'some-utils-dom/handle/keyboard'
 import { useEffects, useLayoutEffects } from 'some-utils-react/hooks/effects'
 import { useIsClient } from 'some-utils-react/hooks/is-client'
-import { VertigoProps } from 'some-utils-three/camera/vertigo'
-import { VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
-import { PlaneDeclaration } from 'some-utils-three/declaration'
+import { type VertigoProps } from 'some-utils-three/camera/vertigo'
+import { type VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
+import { type PlaneDeclaration } from 'some-utils-three/declaration'
 import { ThreePointerEvent } from 'some-utils-three/experimental/contexts/pointer'
-import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
+import { type ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
 import { BasicPipeline, ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
 import { Message } from 'some-utils-ts/message'
@@ -190,7 +190,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
     }
   }, [vertigoControlsProps])
 
-  const layer = { position: 'absolute', inset: 0 } as CSSProperties
+  const layer = { position: 'absolute', inset: 0 } as React.CSSProperties
   return (
     <div ref={ref} className={className} style={layer}>
       <reactThreeContext.Provider value={three}>

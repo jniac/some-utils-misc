@@ -3,14 +3,20 @@
 import { useContext, useMemo } from 'react'
 import { Group, Object3D } from 'three'
 
-import { useEffects, UseEffectsCallback, UseEffectsDeps, UseEffectsEffect, UseEffectsReturnable } from 'some-utils-react/hooks/effects'
-import { TransformDeclaration } from 'some-utils-three/declaration'
-import { ThreeBaseContext, ThreeContextType } from 'some-utils-three/experimental/contexts/types'
+import {
+  useEffects,
+  type UseEffectsCallback,
+  type UseEffectsDeps,
+  type UseEffectsEffect,
+  type UseEffectsReturnable
+} from 'some-utils-react/hooks/effects'
+import { type TransformDeclaration } from 'some-utils-three/declaration'
+import { type ThreeBaseContext, ThreeContextType } from 'some-utils-three/experimental/contexts/types'
 import { ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
-import { TransformProps } from 'some-utils-three/utils/transform'
+import { type TransformProps } from 'some-utils-three/utils/transform'
 import { allDescendantsOf, setup } from 'some-utils-three/utils/tree'
-import { OneOrMany } from 'some-utils-ts/types'
+import { type OneOrMany } from 'some-utils-ts/types'
 
 import { reactThreeContext } from './context'
 
@@ -104,7 +110,7 @@ type UseGroupArguments1 = [
   name: string,
   transform: TransformDeclaration,
   effects: GroupEffects,
-  deps?: UseEffectsDeps,
+  deps?: UseEffectsDeps | undefined,
 ]
 
 function parseUseGroupArguments(args: UseGroupArguments0 | UseGroupArguments1): UseGroupArguments1 {
