@@ -203,9 +203,10 @@ function ServerProofThreeProvider(incomingProps: Props) {
   )
 }
 
-export function ThreeProvider(...args: Parameters<typeof ServerProofThreeProvider>) {
+export function ThreeProvider(props: Props) {
   return useIsClient() && (
-    <ServerProofThreeProvider {...args[0]} />
+    <ServerProofThreeProvider {...props} />
   )
 }
 
+export type { Props as ThreeProviderProps }
