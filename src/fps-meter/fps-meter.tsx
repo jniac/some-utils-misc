@@ -1,6 +1,6 @@
 'use client'
 
-import { HTMLProps } from 'react'
+import type { HTMLProps } from 'react'
 
 import { useEffects } from 'some-utils-react/hooks/effects'
 import { Ticker } from 'some-utils-ts/ticker'
@@ -31,7 +31,7 @@ export function FpsMeter(props: Props) {
   const { frequency, tickerName, precision, ...rest } = { ...defaultProps, ...props }
   const { ref } = useEffects<HTMLDivElement>(function* () {
     const ticker = Ticker.get('three')
-    yield ticker.onTick({ timeInterval: 1 / 3 }, () => {
+    yield ticker.onTick({ timeInterval: 1 / frequency }, () => {
       ref.current.innerText = `${ticker.averageFps.toFixed(precision)} fps`
     })
   }, [frequency, tickerName, precision])
