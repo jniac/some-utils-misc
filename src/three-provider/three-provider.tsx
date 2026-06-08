@@ -139,13 +139,11 @@ function ServerProofThreeProvider(incomingProps: Props) {
 
     if (vertigoControlsProps) {
       const controlsProps = typeof vertigoControlsProps === 'object' ? vertigoControlsProps : {}
+      const element = controlsProps.eventTarget === 'wrapper'
+        ? ref.current!
+        : three.domElement
       const controls = new VertigoControls(controlsProps)
-        .initialize(
-          controlsProps.eventTarget === 'canvas'
-            ? three.domElement
-            : ref.current!,
-          three.scene,
-        )
+        .initialize(element, three.scene)
 
       Object.assign(controls.inputConfig, controlsProps.inputConfig)
       controls.parsePanInputs(controlsProps.panInput ?? '')

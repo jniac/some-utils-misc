@@ -1,8 +1,8 @@
-import { TreeNode } from 'some-utils-ts/experimental/layout/flex/TreeNode'
-
 import { handlePointer } from 'some-utils-dom/handle/pointer'
+import { TreeNode } from 'some-utils-ts/experimental/layout/flex/TreeNode'
 import { dumpDestroyables } from 'some-utils-ts/misc/destroy'
 import { Destroyable } from 'some-utils-ts/types'
+
 import css from './hierarchy.css'
 
 type HierarchyNodeState = {
@@ -20,9 +20,44 @@ class HierarchyNode<T = any> extends TreeNode {
   }
 }
 
+const computeTreeHashWeakMap = new WeakMap<any, number>()
+
+function computeTreeHash<T>(
+  sourceRoot: T,
+  children: (node: T) => Iterable<T>,
+  hideDelegate: (object: T) => boolean = () => false,
+): number {
+  let hash = 0
+  const stack: T[] = [sourceRoot]
+
+  while (stack.length > 0) {
+    const node = stack.pop()!
+
+    if (hideDelegate(node))
+      continue
+
+    let nodeHash = computeTreeHashWeakMap.get(node)
+    if (nodeHash === undefined) {
+      nodeHash = (hash * 31 + (hideDelegate(node) ? 1 : 0)) | 0
+      computeTreeHashWeakMap.set(node, nodeHash)
+    }
+    hash ^= nodeHash
+
+    let childCount = 0
+    for (const child of children(node)) {
+      stack.push(child)
+      childCount++
+    }
+    hash = (hash * 31 + childCount) | 0
+  }
+
+  return hash
+}
+
 function buildTree<T>(
   sourceRoot: T,
   children: (node: T) => Iterable<T>,
+  hideDelegate: (object: T) => boolean = () => false,
   cacheKey = null as string | null,
 ) {
   const root = new HierarchyNode<T>()
@@ -31,7 +66,11 @@ function buildTree<T>(
   const stack: HierarchyNode<T>[] = [root]
   while (stack.length > 0) {
     const node = stack.pop()!
+
     for (const child of children(node.value!)) {
+      if (hideDelegate(child))
+        continue
+
       const childNode = new HierarchyNode<T>()
       childNode.value = child
       node.addChild(childNode)
@@ -80,6 +119,16 @@ function ensureStyle() {
 
 const hierarchyDefaultOptions = {
   cacheKey: null as string | null,
+  children: <T>(node: T) => (node as any)['children'] as T[] ?? [],
+  hide: <T>(object: T) => {
+    if ('userData' in (object as any)) {
+      const userData = (object as any).userData
+      if (userData?.hideInHierarchy === true || userData?.isHelper === true) {
+        return true
+      }
+    }
+    return false
+  },
 }
 
 type HierarchyOptions<T = any> = typeof hierarchyDefaultOptions & {
@@ -107,8 +156,9 @@ export class HierarchyView<T = any> {
 
     const tree = buildTree(
       sourceRoot,
-      (node: T) => (node as any)['children'] as T[] ?? [],
-      options.cacheKey
+      options.children,
+      options.hide,
+      options.cacheKey,
     )
 
     const destroy = () => {
@@ -119,6 +169,8 @@ export class HierarchyView<T = any> {
       dumpDestroyables(this.#private.destroyables)
       this.#private.destroyables = []
       this.#private.selection.clear()
+      this.div.innerHTML = ''
+      this.div.remove()
       this.#private.destroyed = true
     }
 
@@ -140,8 +192,7 @@ export class HierarchyView<T = any> {
             throw new Error('Oops, Node not found for div (???)')
           if (info.downTarget.classList.contains('expand-toggle')) {
             this.#handleNodeToggleTap(node, info.tapCount)
-          }
-          if (info.downTarget.classList.contains('name')) {
+          } else {
             this.#handleNodeNameTap(node, info.originalDownEvent)
           }
         },
@@ -153,6 +204,15 @@ export class HierarchyView<T = any> {
 
   destroy = () => {
     this.#private.destroy()
+  }
+
+  computeHash() {
+    const { tree, options } = this.#private
+    return tree.value === null ? -1 : computeTreeHash(
+      tree.value,
+      options.children,
+      options.hide,
+    )
   }
 
   #build() {
