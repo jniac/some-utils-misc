@@ -50,6 +50,8 @@ const defaultProps = {
   minActiveDuration: 30,
   fullscreenKey: null as KeyboardFilterDeclaration | null,
 
+  shadow: false as boolean | THREE.ShadowMapType,
+
   fxaa: false,
   smaa: false,
   stencil: false,
@@ -72,7 +74,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
   typeRef.current = type
 
   const three: ThreeBaseContext = useMemo(() => type === 'webgl'
-    ? new ThreeWebGLContext({ useStencil: props.stencil })
+    ? new ThreeWebGLContext({ useStencil: props.stencil, shadow: props.shadow })
     : new ThreeWebGPUContext(), [type])
 
   switch (type) {
