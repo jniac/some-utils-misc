@@ -78,7 +78,7 @@ export function useThreeWebGL(
 export function useThreeWebGPU(
   effects?: UseEffectsCallback<ThreeWebGPUContext>,
   deps?: UseEffectsDeps,
-): ThreeWebGPUContext | null {
+): ThreeWebGPUContext {
   const three = useThree(async function* (three, effect) {
     if (three.type === ThreeContextType.WebGPU && effects) {
       const fx = effects as UseEffectsCallback<ThreeBaseContext>
@@ -95,7 +95,7 @@ export function useThreeWebGPU(
   if (three.type === ThreeContextType.WebGPU) {
     return three
   }
-  return null
+  throw new Error('No WebGPU context available')
 }
 
 type GroupEffects = (group: Group, three: ThreeBaseContext, state: UseEffectsEffect) => UseEffectsReturnable

@@ -11,7 +11,7 @@ import { type VertigoProps } from 'some-utils-three/camera/vertigo'
 import { type VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
 import { type PlaneDeclaration } from 'some-utils-three/declaration'
 import { ThreePointerEvent } from 'some-utils-three/experimental/contexts/pointer'
-import { type ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
+import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
 import { BasicPipeline, ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
 import { Message } from 'some-utils-ts/message'
@@ -111,7 +111,15 @@ function ServerProofThreeProvider(incomingProps: Props) {
       return isCanvas === false
     })
 
-    effect.triggerRender()
+    if (three instanceof ThreeWebGLContext) {
+      effect.triggerRender()
+    }
+
+    else if (three instanceof ThreeWebGPUContext) {
+      three.renderer.init().then(() => {
+        effect.triggerRender()
+      })
+    }
 
     Object.assign(window, { three, THREE })
   }, [])
