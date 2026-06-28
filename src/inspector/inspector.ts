@@ -35,8 +35,41 @@ function inferFields<T extends object>(instance: T): MetaProperty[] {
   return fields
 }
 
+function tryApplyChange(key: string, value: any, targetArg: object | object[]): boolean {
+  const keys = key.split('.')
+  const lastKey = keys[keys.length - 1]
+  const targets = Array.isArray(targetArg) ? targetArg : [targetArg]
+  for (const currentTarget of targets) {
+    let current: any = currentTarget
+    for (let i = 0; i < keys.length - 1; i++) {
+      const k = keys[i]
+      if (!(k in current)) {
+        break
+      }
+      current = current[k]
+    }
+    if (lastKey in current) {
+      const target = current[lastKey]
+      if (Array.isArray(value)) {
+        for (let i = 0; i < value.length; i++) {
+          target[i] = value[i]
+        }
+      } else if (typeof value === 'object' && value !== null) {
+        for (const [k, v] of Object.entries(value)) {
+          target[k] = v
+        }
+      } else {
+        current[lastKey] = value
+      }
+      return true
+    }
+  }
+  return false
+}
+
 export class InspectorView {
   static inferFields = inferFields
+  static tryApplyChange = tryApplyChange
 
   div = document.createElement('div')
   style = document.createElement('style')
