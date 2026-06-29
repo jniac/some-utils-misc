@@ -16,14 +16,38 @@ import css from './inspector.css'
 import closeSvg from './svg/close.svg'
 
 /**
+ * Infer the type of a value (WIP).
+ */
+function inferType(value: any): string {
+  if (value === null)
+    return 'null'
+  if (value === undefined)
+    return 'undefined'
+  if (Array.isArray(value))
+    return 'array'
+  if (typeof value === 'object') {
+    const keys = Object.keys(value)
+    const isNumericVector = keys.length > 0 && keys.every(k => typeof value[k] === 'number')
+    if (isNumericVector) {
+      return `vector(${keys.join(',')})`
+    }
+    const isEuler = value.isEuler === true
+    if (isEuler) {
+      return 'vector(x,y,z)'
+    }
+  }
+  return typeof value
+}
+
+/**
  * Infer fields from an object instance.
  */
-function inferFields<T extends object>(instance: T): MetaProperty[] {
+function inferFields<T extends object>(instance: T, propsMeta?: Record<string, any>): MetaProperty[] {
   const fields: MetaProperty[] = []
   for (const key of Object.keys(instance)) {
     const value = (instance as any)[key]
-    const meta = (instance as any).constructor[key]
-    const type = meta?.type ?? typeof value
+    const meta = propsMeta?.[key] ?? (instance as any).constructor[key]
+    const type = meta?.type ?? inferType(value)
     const description = meta?.description
     fields.push(new MetaProperty({
       key,
@@ -301,6 +325,21 @@ export class InspectorView {
     this.#state.fieldTree = new FieldTree(this.#state.properties)
 
     this.#render()
+  }
+
+  /**
+   * Will invoke `registerFields` with the fields inferred from the target object, 
+   * and will use the target object as the source of truth for the values of the fields.
+   * 
+   * Note: 
+   * - ⚠️ You still have to call `onChange` or `onAnyChange` to listen for changes 
+   *   to the fields and apply them to the target object.
+   */
+  generateFields(target: object, propsMeta?: Record<string, any>): this {
+    this.registerFields(inferFields(target, propsMeta), {
+      updatedValues: () => target as Record<string, any>,
+    })
+    return this
   }
 
   #clearRenderFields() {
