@@ -42,7 +42,7 @@ function inferType(value: any): string {
 /**
  * Infer fields from an object instance.
  */
-function inferFields<T extends object>(instance: T, propsMeta?: Record<string, any>): MetaProperty[] {
+function inferFields<T extends object>(instance: T, propsMeta?: Record<string, any> | null): MetaProperty[] {
   const fields: MetaProperty[] = []
   for (const key of Object.keys(instance)) {
     const value = (instance as any)[key]
@@ -335,8 +335,11 @@ export class InspectorView {
    * - ⚠️ You still have to call `onChange` or `onAnyChange` to listen for changes 
    *   to the fields and apply them to the target object.
    */
-  generateFields(target: object, propsMeta?: Record<string, any>): this {
-    this.registerFields(inferFields(target, propsMeta), {
+  generateFields(target: object, propsMeta?: Record<string, any> | null, extraFields: RawMetaProperty[] = []): this {
+    this.registerFields([
+      ...inferFields(target, propsMeta),
+      ...extraFields,
+    ], {
       updatedValues: () => target as Record<string, any>,
     })
     return this
