@@ -8,7 +8,7 @@ import { handleKeyboard, type KeyboardFilterDeclaration } from 'some-utils-dom/h
 import { useEffects, useLayoutEffects } from 'some-utils-react/hooks/effects'
 import { useIsClient } from 'some-utils-react/hooks/is-client'
 import { type VertigoProps } from 'some-utils-three/camera/vertigo'
-import { type VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
+import { DOFConstraintDeclaration, type VertigoControlInputString, VertigoControls } from 'some-utils-three/camera/vertigo/controls'
 import { type PlaneDeclaration } from 'some-utils-three/declaration'
 import { ThreePointerEvent } from 'some-utils-three/experimental/contexts/pointer'
 import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
@@ -30,6 +30,10 @@ type ExtendedVertigoProps = VertigoProps & Partial<{
    * If true, the controls will be fixed in place and not respond to user input.
    */
   fixed: boolean
+  /**
+   * Input degrees of freedom for the controls.
+   */
+  inputDOF: DOFConstraintDeclaration
   panInput: VertigoControlInputString
   orbitInput: VertigoControlInputString
   inputConfig: Partial<VertigoControls['inputConfig']>
@@ -156,6 +160,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
         .initialize(element, three.scene)
 
       Object.assign(controls.inputConfig, controlsProps.inputConfig)
+      controls.inputDOF.set(controlsProps.inputDOF ?? 'free')
       controls.parsePanInputs(controlsProps.panInput ?? '')
       controls.parseOrbitInputs(controlsProps.orbitInput ?? '')
       controls.focusPlane = controlsProps.focusPlane ?? null
