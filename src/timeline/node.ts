@@ -261,6 +261,14 @@ export class Node {
     return this
   }
 
+  incrementOffset(delta: number, { throwIfNotAbsolute = true } = {}): this {
+    if (throwIfNotAbsolute && this.props.type !== NodeType.absolute)
+      throw new Error('Cannot increment offset on a non-absolute node')
+
+    this.props.offset.set(this.props.offset.value + delta)
+    return this
+  }
+
   toInnerSvgString(arg?: ToInnerSvgStringOptions): string {
     return toGraphSvgString(this, arg).string
   }
