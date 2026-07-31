@@ -91,6 +91,33 @@ function tryApplyChange(key: string, value: any, targetArg: object | object[]): 
   return false
 }
 
+/**
+ * An inspector view that can be used to inspect and modify the properties of an object.
+ * 
+ * Usage:
+ * ```ts
+ * class MyState {
+ *   static propsMeta = {
+ *     alpha: {
+ *       type: `number slider(0, 1)`,
+ *       description: 'An alpha value.',
+ *     },
+ *     position: {
+ *       type: `vector(x, y, z) slider(-5, 5) slider-fill(none) widget(translate-3d)`,
+ *       description: '...',
+ *     },
+ *   }
+ * 
+ *   alpha = 0
+ *   position = new Vector3(1, 2, 0)
+ * }
+ * 
+ * const state = new MyState()
+ * const inspector = new InspectorView()
+ * inspector.generateFields(state, MyState.propsMeta)
+ * someDiv.appendChild(inspector.div)
+ * ```
+ */
 export class InspectorView {
   static inferFields = inferFields
   static tryApplyChange = tryApplyChange
