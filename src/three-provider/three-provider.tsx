@@ -12,7 +12,7 @@ import { DOFConstraintDeclaration, type VertigoControlInputString, VertigoContro
 import { type PlaneDeclaration } from 'some-utils-three/declaration'
 import { ThreePointerEvent } from 'some-utils-three/experimental/contexts/pointer'
 import { ThreeBaseContext } from 'some-utils-three/experimental/contexts/types'
-import { BasicPipeline, ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
+import { isBasicPipeline, ThreeWebGLContext } from 'some-utils-three/experimental/contexts/webgl'
 import { ThreeWebGPUContext } from 'some-utils-three/experimental/contexts/webgpu'
 import { Message } from 'some-utils-ts/message'
 import { TickPhase } from 'some-utils-ts/ticker'
@@ -63,8 +63,19 @@ const defaultProps = {
 
 type Props = Partial<typeof defaultProps> & { children?: React.ReactNode }
 
+function combineWithoutUndefined<T extends object, U extends object>(source: T, override: U): T & U {
+  const result = { ...source } as any
+  for (const key in override) {
+    const value = override[key]
+    if (value !== undefined) {
+      result[key] = value
+    }
+  }
+  return result
+}
+
 function ServerProofThreeProvider(incomingProps: Props) {
-  const props = { ...defaultProps, ...incomingProps }
+  const props = combineWithoutUndefined(defaultProps, incomingProps)
   const { children, className, vertigoControls: vertigoControlsProps } = props
 
   // Type handling for webgl and webgpu
@@ -84,7 +95,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
   switch (type) {
     case 'webgl': {
       const webgl = three as ThreeWebGLContext
-      if (webgl.pipeline instanceof BasicPipeline) {
+      if (isBasicPipeline(webgl.pipeline)) {
         webgl.pipeline.basicPasses.fxaa.enabled = props.fxaa
         webgl.pipeline.basicPasses.smaa.enabled = props.smaa
       } else {
