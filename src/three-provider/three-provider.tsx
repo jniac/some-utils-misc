@@ -53,6 +53,7 @@ const defaultProps = {
   vertigoControls: false as boolean | ExtendedVertigoProps,
   minActiveDuration: 30,
   fullscreenKey: null as KeyboardFilterDeclaration | null,
+  position: 'fixed' as 'fixed' | 'absolute',
 
   shadow: false as boolean | THREE.ShadowMapType,
 
@@ -214,7 +215,7 @@ function ServerProofThreeProvider(incomingProps: Props) {
     }
   }, [vertigoControlsProps])
 
-  const layer = { position: 'absolute', inset: 0 } as React.CSSProperties
+  const layer = { position: props.position, inset: 0 } as React.CSSProperties
   return (
     <div ref={ref} className={className} style={layer}>
       <reactThreeContext.Provider value={three}>
